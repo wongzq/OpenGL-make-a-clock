@@ -158,3 +158,11 @@ void generateCircleVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 	}
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
 }
+
+void drawCircle() {
+	int uniformLocation;
+	uniformLocation = glGetUniformLocation(program, "color");
+	glUniform4f(uniformLocation, 1.0, 0.0, 0.0, 1.0);
+	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
+	glFlush();
+}
