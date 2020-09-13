@@ -128,8 +128,23 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 	return programID;
 }
 
+void init(void) {
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_DYNAMIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
 
+	program = loadShaders("vertexShader.glsl", "fragmentShader.glsl");
 
+	glClearColor(0.9, 0.9, 0.9, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-
+	// activate shader program
+	glUseProgram(program);
+	// if the VAO already exists, make that buffer the current active one
+	glBindBuffer(GL_ARRAY_BUFFER, VAO);
+}
