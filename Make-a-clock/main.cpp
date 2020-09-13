@@ -178,3 +178,9 @@ void drawFrame() {
 	glDisable(GL_LINE_STIPPLE);
 	glFlush();
 }
+
+void display(void) {
+	glClear(GL_COLOR_BUFFER_BIT);
+	drawCircle();
+	glFlush();
+}
