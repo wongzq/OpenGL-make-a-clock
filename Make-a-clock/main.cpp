@@ -184,3 +184,16 @@ void display(void) {
 	drawCircle();
 	glFlush();
 }
+
+void main(int argc, char** argv) {
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+	glutInitWindowSize(600, 600);
+	glutInitWindowPosition(50, 25);
+	glutCreateWindow("Make a Clock");
+	glewInit();
+	init();
+	glutDisplayFunc(display);
+
+	glutMainLoop();
+}
