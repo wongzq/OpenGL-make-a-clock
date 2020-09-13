@@ -6,7 +6,7 @@
 #include <cmath>
 
 const float PI = 3.14159;
-const unsigned int circleVertices = 100;
+const unsigned int numOfCircleVertices = 100;
 
 GLuint VBO;		// ID for Vertex Buffer Objects
 GLuint VAO;		// ID for Vertex Array Objects
@@ -19,7 +19,7 @@ struct coordinate {
 
 GLfloat center_x, center_y;
 GLfloat circle_w, circle_h;
-coordinate vertex[circleVertices + 4];
+coordinate vertex[numOfCircleVertices + 4];
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -147,4 +147,14 @@ void init(void) {
 	glUseProgram(program);
 	// if the VAO already exists, make that buffer the current active one
 	glBindBuffer(GL_ARRAY_BUFFER, VAO);
+}
+
+void generateCircleVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+	float theta = 0.0;
+	float increment = 2 * PI / numOfCircleVertices;
+	for (int i = 0; i < numOfCircleVertices; i++) {
+		vertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
+		theta += increment;
+	}
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
 }
