@@ -166,3 +166,15 @@ void drawCircle() {
 	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
 	glFlush();
 }
+
+void drawFrame() {
+	int uniformLocation;
+	uniformLocation = glGetUniformLocation(program, "color");
+	glUniform4f(uniformLocation, 0.25, 0.25, 0.25, 1.0);
+	// enable draw lines with a different stipple
+	glEnable(GL_LINE_STIPPLE);
+	glLineStipple(1, 0x0f0f);
+	glDrawArrays(GL_LINE_LOOP, numOfCircleVertices, 4);
+	glDisable(GL_LINE_STIPPLE);
+	glFlush();
+}
