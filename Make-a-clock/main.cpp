@@ -5,7 +5,7 @@
 #include <string>
 #include <cmath>
 
-const float PI = 3.14159;
+const double PI = 3.14159;
 const unsigned int numOfCircleVertices = 100;
 
 GLuint VBO[2];		// ID for Vertex Buffer Objects
@@ -236,7 +236,7 @@ void display(void) {
 	glFlush();
 }
 
-void main(int argc, char** argv) {
+int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
 	glutInitWindowSize(600, 600);
