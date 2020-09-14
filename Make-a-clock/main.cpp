@@ -17,8 +17,11 @@ struct coordinate {
 	GLfloat y;
 };
 
-GLfloat center_x, center_y;
-GLfloat circle_w, circle_h;
+// clock options
+GLfloat center_x = 0;
+GLfloat center_y = 0;
+GLfloat circle_w = 1;
+GLfloat circle_h = 1;
 coordinate vertex[numOfCircleVertices + 4];
 
 // function to load shaders
@@ -36,10 +39,10 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		while (std::getline(vShaderStream, line))
 			vShaderCodeStr += line + "\n";
 		vShaderStream.close();
-		std::cout << "Successfully opened vertex shader file - " << vShaderFile << std::endl;
 	}
 	else {
 		// output error message and exit
+		std::cout << "Failed to open vertex shader file - " << vShaderFile << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -153,11 +156,11 @@ void init(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, VAO);
 }
 
-void generateCircleVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+void generateCircleVertices() {
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
 	for (int i = 0; i < numOfCircleVertices; i++) {
-		vertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
+		vertex[i] = { (cos(theta) * circle_w / 2) + center_x, (sin(theta) * circle_h / 2) + center_y };
 		theta += increment;
 	}
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
@@ -174,8 +177,14 @@ void drawCircle() {
 void drawFrame() {
 	int uniformLocation;
 	uniformLocation = glGetUniformLocation(program, "color");
-	glUniform4f(uniformLocation, 0.25, 0.25, 0.25, 1.0);
+	glUniform4f(uniformLocation, 0.5, 0.5, 0.5, 1.0);
 	// enable draw lines with a different stipple
+	vertex[100] = { -0.5, -0.5 };
+	vertex[101] = {  0.5, -0.5 };
+	vertex[102] = {  0.5,  0.5 };
+	vertex[103] = { -0.5,  0.5 };
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
+
 	glEnable(GL_LINE_STIPPLE);
 	glLineStipple(1, 0x0f0f);
 	glDrawArrays(GL_LINE_LOOP, numOfCircleVertices, 4);
@@ -186,6 +195,7 @@ void drawFrame() {
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	drawCircle();
+	drawFrame();
 	glFlush();
 }
 
@@ -195,9 +205,10 @@ void main(int argc, char** argv) {
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(50, 25);
 	glutCreateWindow("Make a Clock");
+
 	glewInit();
 	init();
-	generateCircleVertices(0, 0, 0.7, 0.7);
+	generateCircleVertices();
 	glutDisplayFunc(display);
 
 	glutMainLoop();
