@@ -78,7 +78,7 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 
 		int infoLogLength;
 		glGetShaderiv(fShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-		char* errorMsg = new char[infoLogLength + 1];
+		char* errorMsg = new char[static_cast<__int64>(infoLogLength) + 1];
 		glGetShaderInfoLog(vShaderID, infoLogLength, NULL, errorMsg);
 		std::cout << errorMsg << std::endl;
 		delete[] errorMsg;
@@ -92,7 +92,7 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		std::cout << "Failed to compile fragment shader - " << fShaderFile << std::endl;
 		int infoLogLength;
 		glGetShaderiv(fShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-		char* errorMsg = new char[infoLogLength + 1];
+		char* errorMsg = new char[static_cast<__int64>(infoLogLength) + 1];
 		glGetShaderInfoLog(fShaderID, infoLogLength, NULL, errorMsg);
 		std::cout << errorMsg << std::endl;
 		delete[] errorMsg;
@@ -117,7 +117,7 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		std::cout << "Failed to link program object." << std::endl;
 		int infoLogLength;
 		glGetShaderiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-		char* errorMsg = new char[infoLogLength + 1];
+		char* errorMsg = new char[static_cast<__int64>(infoLogLength) + 1];
 		glGetShaderInfoLog(programID, infoLogLength, NULL, errorMsg);
 		std::cout << errorMsg << std::endl;
 		delete[] errorMsg;
