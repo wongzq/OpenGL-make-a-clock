@@ -25,6 +25,7 @@ coordinate vertex[numOfCircleVertices + 4];
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
 	GLint status;	// to check compile and linking status
 
+	// VERTEX SHADER
 	// load vertex shader code from file
 	std::string vShaderCodeStr;		
 	std::ifstream vShaderStream(vShaderFile, std::ios::in);
@@ -35,13 +36,14 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		while (std::getline(vShaderStream, line))
 			vShaderCodeStr += line + "\n";
 		vShaderStream.close();
+		std::cout << "Successfully opened vertex shader file - " << vShaderFile << std::endl;
 	}
 	else {
 		// output error message and exit
-		std::cout << "Failed to open vertex shader file - " << vShaderFile << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
+	// FRAGMENT SHADER
 	// load fragment shader code from file
 	std::string fShaderCodeStr;
 	std::ifstream fShaderStream(fShaderFile, std::ios::in);
@@ -49,7 +51,7 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 	if (fShaderStream.is_open()) {
 		// read from stream line by line and append it to shader code
 		std::string line = "";
-		while (getline(fShaderStream, line))
+		while (std::getline(fShaderStream, line))
 			fShaderCodeStr += line + "\n";
 		fShaderStream.close();
 	}
@@ -86,8 +88,10 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		exit(EXIT_FAILURE);
 	}
 
+	// compile fragment shader
 	status = GL_FALSE;
 	glCompileShader(fShaderID);
+	glGetShaderiv(fShaderID, GL_COMPILE_STATUS, &status);
 	if (status == GL_FALSE) {
 		std::cout << "Failed to compile fragment shader - " << fShaderFile << std::endl;
 		int infoLogLength;
@@ -193,6 +197,7 @@ void main(int argc, char** argv) {
 	glutCreateWindow("Make a Clock");
 	glewInit();
 	init();
+	generateCircleVertices(0, 0, 0.7, 0.7);
 	glutDisplayFunc(display);
 
 	glutMainLoop();
