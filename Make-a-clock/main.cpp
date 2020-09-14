@@ -18,10 +18,6 @@ struct coordinate {
 };
 
 // clock options
-GLfloat center_x = 0;
-GLfloat center_y = 0;
-GLfloat circle_w = 1;
-GLfloat circle_h = 1;
 coordinate vertex[numOfCircleVertices + 4];
 
 // function to load shaders
@@ -156,11 +152,11 @@ void init(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, VAO);
 }
 
-void generateCircleVertices() {
+void generateCircleVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
 	for (int i = 0; i < numOfCircleVertices; i++) {
-		vertex[i] = { (cos(theta) * circle_w / 2) + center_x, (sin(theta) * circle_h / 2) + center_y };
+		vertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
 		theta += increment;
 	}
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
@@ -170,7 +166,7 @@ void drawCircle() {
 	int uniformLocation;
 	uniformLocation = glGetUniformLocation(program, "color");
 	glUniform4f(uniformLocation, 1.0, 0.0, 0.0, 1.0);
-	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
+	glDrawArrays(GL_POLYGON, 0, numOfCircleVertices);
 	glFlush();
 }
 
@@ -208,7 +204,7 @@ void main(int argc, char** argv) {
 
 	glewInit();
 	init();
-	generateCircleVertices();
+	generateCircleVertices(0, 0, 1, 1);
 	glutDisplayFunc(display);
 
 	glutMainLoop();
