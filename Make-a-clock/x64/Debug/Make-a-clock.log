@@ -1,6 +1,6 @@
 ﻿  main.cpp
 C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(8,25): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(146,33): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(198,34): warning C4326: return type of 'main' should be 'int' instead of 'void'
-  LINK : C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe not found or not built by the last incremental link; performing full link
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(153,33): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(231,40): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(239,34): warning C4326: return type of 'main' should be 'int' instead of 'void'
   Make-a-clock.vcxproj -> C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe
