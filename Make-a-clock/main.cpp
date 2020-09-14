@@ -167,7 +167,7 @@ void generateCircleVertices1(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 		clockFrameVertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
 		theta += increment;
 	}
-	glBindVertexArray(VAO[0]);
+	//glBindVertexArray(VAO[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockFrameVertex), clockFrameVertex);
 }
@@ -179,14 +179,14 @@ void generateCircleVertices2(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 		clockBodyVertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
 		theta += increment;
 	}
-	glBindVertexArray(VAO[1]);
+	//glBindVertexArray(VAO[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockBodyVertex), clockBodyVertex);
 }
 
 void drawCircle1() {
 	glBindVertexArray(VAO[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	int uniformLocation;
 	uniformLocation = glGetUniformLocation(program, "color");
 	glUniform4f(uniformLocation, 1.0, 0.0, 0.0, 1.0);
@@ -196,7 +196,7 @@ void drawCircle1() {
 
 void drawCircle2() {
 	glBindVertexArray(VAO[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	int uniformLocation;
 	uniformLocation = glGetUniformLocation(program, "color");
 	glUniform4f(uniformLocation, 0.0, 1.0, 0.0, 1.0);
