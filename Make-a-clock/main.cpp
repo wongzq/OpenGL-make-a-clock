@@ -39,12 +39,13 @@ struct coordinate {
 // constants
 const double PI = 3.14159;
 const unsigned int numOfCircleVertices = 100;
+const int numOfColors = 4;
 
 // clockVertex[0] is Clock Frame, clockVertex[1] is Clock Body
 coordinate clockVertex[2][numOfCircleVertices];
 
 // color[Red Option,Green Option, Blue Option][100][R value, G value, B value]
-GLfloat color[3][numOfCircleVertices][3];
+GLfloat color[numOfColors][numOfCircleVertices][3];
 
 float clockSize = 1.0f;
 
@@ -161,11 +162,18 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 
 void init(void) {
 	// initialize color array
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < numOfColors; i++) {
 		for (int j = 0; j < numOfCircleVertices; j++) {
-			color[i][j][0] = (i == 0 ? 0.5 : 0.0);	// if i == 0, color is Red
-			color[i][j][1] = (i == 1 ? 0.5 : 0.0);	// if i == 1, color is Green
-			color[i][j][2] = (i == 2 ? 0.5 : 0.0);	// if i == 2, color is Blue
+			if (i == 3) {
+				color[i][j][0] = 0.8;
+				color[i][j][1] = 0.8;
+				color[i][j][2] = 0.8;
+			}
+			else {
+				color[i][j][0] = (i == 0 ? 0.5 : 0.0);	// if i == 0, color is Red
+				color[i][j][1] = (i == 1 ? 0.5 : 0.0);	// if i == 1, color is Green
+				color[i][j][2] = (i == 2 ? 0.5 : 0.0);	// if i == 2, color is Blue
+			}
 		}
 	}
 
@@ -185,15 +193,17 @@ void init(void) {
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * 100 * 3 * sizeof(GLfloat)));
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(1 * 100 * 3 * sizeof(GLfloat)));
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * 100 * 3 * sizeof(GLfloat)));
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(3 * 100 * 3 * sizeof(GLfloat)));
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 		glEnableVertexAttribArray(3);
+		glEnableVertexAttribArray(4);
 	}
 
 	program = loadShaders("vertexShader.glsl", "fragmentShader.glsl");
-	glClearColor(0.9, 0.9, 0.9, 1.0);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(program);
 }
@@ -219,7 +229,10 @@ void drawCircle(int index) {
 
 	glBindVertexArray(VAO[index]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
-	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
+	if (index == BODY) {
+		glUniform1i(uniformLocation, 4);
+	}
+	glDrawArrays(GL_POLYGON, 0, numOfCircleVertices);
 	glFlush();
 }
 
