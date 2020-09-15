@@ -1,5 +1,5 @@
 ﻿  main.cpp
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(147,33): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(154,48): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(201,42): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(157,33): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(164,48): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(192,43): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
   Make-a-clock.vcxproj -> C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe

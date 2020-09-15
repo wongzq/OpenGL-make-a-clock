@@ -5,20 +5,31 @@
 #include <string>
 #include <cmath>
 
-const double PI = 3.14159;
-const unsigned int numOfCircleVertices = 100;
-
+// openGL variables
 GLuint VBO[2];		// ID for Vertex Buffer Objects
 GLuint VAO[2];		// ID for Vertex Array Objects
 GLuint program;
+
+// constants
+const double PI = 3.14159;
+const unsigned int numOfCircleVertices = 100;
+
+// clock options
+enum MenuOption :int {
+	ROUND, SQUARE,
+	SHOW, HIDE,
+	SMALL, MEDIUM, LARGE,
+	RED, GREEN, BLUE,
+	EXIT
+};
 
 struct coordinate {
 	GLfloat x;
 	GLfloat y;
 };
 
-// clock options
-coordinate clockVertex[2][numOfCircleVertices] = {};
+coordinate clockVertex[2][numOfCircleVertices];
+float clockSize = 1;
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -134,7 +145,6 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 void init(void) {
 	glGenVertexArrays(2, VAO);
 	glGenBuffers(2, VBO);
-
 	for (int index = 0; index < 2; index++) {
 		glBindVertexArray(VAO[index]);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
@@ -149,12 +159,12 @@ void init(void) {
 	glUseProgram(program);
 }
 
-void generateCircleVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h, int index) {
+void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
-	
+
 	for (int i = 0; i < numOfCircleVertices; i++) {
-		clockVertex[index][i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
+		clockVertex[index][i] = { (cos(theta) * r / 2) + x, (sin(theta) * r / 2) + y };
 		theta += increment;
 	}
 
@@ -174,36 +184,71 @@ void drawCircle(int index) {
 	glFlush();
 }
 
-void drawFrame() {
-	//int uniformLocation;
-	//uniformLocation = glGetUniformLocation(program, "color");
-	//glUniform4f(uniformLocation, 0.5, 0.5, 0.5, 1.0);
-	// enable draw lines with a different stipple
-	//vertex[100] = { -0.5, -0.5 };
-	//vertex[101] = {  0.5, -0.5 };
-	//vertex[102] = {  0.5,  0.5 };
-	//vertex[103] = { -0.5,  0.5 };
-	//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
-
-	//glEnable(GL_LINE_STIPPLE);
-	//glLineStipple(1, 0x0f0f);
-	//glDrawArrays(GL_LINE_LOOP, numOfCircleVertices, 4);
-	//glDisable(GL_LINE_STIPPLE);
-	//glFlush();
-}
-
 void display(void) {
-	//glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	generateCircleVertices(0, 0, 1.0, 1.0, 0);
+	generateCircleVertices(0, 0, clockSize, 0);
 	drawCircle(0);
-
-	generateCircleVertices(0, 0, 0.7, 0.7, 1);
+	generateCircleVertices(0, 0, clockSize * 0.75, 1);
 	drawCircle(1);
 
-	//drawFrame();
-
 	glFlush();
+}
+
+void processMenuEvents(int option) {
+	int uniformLocation = glGetUniformLocation(program, "colorChoice");
+	switch (static_cast<MenuOption>(option)) {
+	case MenuOption::SMALL:
+		clockSize = 0.75;
+		break;
+	case MenuOption::MEDIUM:
+		clockSize = 1;
+		break;
+	case MenuOption::LARGE:
+		clockSize = 1.5;
+		break;
+	case MenuOption::EXIT:
+		exit(0);
+		break;
+	default:
+		break;
+	}
+	glutPostRedisplay();
+}
+
+
+void createMenu() {
+	//// > clock shape menu
+	//int clockShapeMenu = glutCreateMenu(processMenuEvents);
+	//glutAddMenuEntry("Round", ROUND);
+	//glutAddMenuEntry("Square", SQUARE);
+
+	//// > clock color menu
+	//int clockColorMenu = glutCreateMenu(processMenuEvents);
+	//glutAddMenuEntry("Red", RED);
+	//glutAddMenuEntry("Green", GREEN);
+	//glutAddMenuEntry("Blue", BLUE);
+
+	//// > clock digits menu
+	//int clockDigitsMenu = glutCreateMenu(processMenuEvents);
+	//glutAddMenuEntry("Show", SHOW);
+	//glutAddMenuEntry("Hide", HIDE);
+
+	// > clock size menu
+	int clockSizeMenu = glutCreateMenu(processMenuEvents);
+	glutAddMenuEntry("Small", SMALL);
+	glutAddMenuEntry("Medium", MEDIUM);
+	glutAddMenuEntry("Large", LARGE);
+
+	// main menu
+	int menu = glutCreateMenu(processMenuEvents);
+	//glutAddSubMenu("Shape", clockShapeMenu);
+	//glutAddSubMenu("Color", clockColorMenu);
+	//glutAddSubMenu("Digits", clockDigitsMenu);
+	glutAddSubMenu("Size", clockSizeMenu);
+	glutAddMenuEntry("Exit", EXIT);
+
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 int main(int argc, char** argv) {
@@ -215,7 +260,7 @@ int main(int argc, char** argv) {
 
 	glewInit();
 	init();
-
+	createMenu();
 	glutDisplayFunc(display);
 
 	glutMainLoop();
