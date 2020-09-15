@@ -18,8 +18,7 @@ struct coordinate {
 };
 
 // clock options
-coordinate clockFrameVertex[numOfCircleVertices];
-coordinate clockBodyVertex[numOfCircleVertices];
+coordinate clockVertex[2][numOfCircleVertices] = {};
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -27,10 +26,10 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 
 	// VERTEX SHADER
 	// load vertex shader code from file
-	std::string vShaderCodeStr;		
+	std::string vShaderCodeStr;
 	std::ifstream vShaderStream(vShaderFile, std::ios::in);
 
-	if(vShaderStream.is_open()) {
+	if (vShaderStream.is_open()) {
 		// read from stream line by line and append it to shader code
 		std::string line = "";
 		while (std::getline(vShaderStream, line))
@@ -136,70 +135,41 @@ void init(void) {
 	glGenVertexArrays(2, VAO);
 	glGenBuffers(2, VBO);
 
-	glBindVertexArray(VAO[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(clockFrameVertex), clockFrameVertex, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
-	glEnableVertexAttribArray(0);
-	
-	glBindVertexArray(VAO[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(clockBodyVertex), clockBodyVertex, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
-	glEnableVertexAttribArray(0);
+	for (int index = 0; index < 2; index++) {
+		glBindVertexArray(VAO[index]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(clockVertex[index]), clockVertex[index], GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+		glEnableVertexAttribArray(0);
+	}
 
 	program = loadShaders("vertexShader.glsl", "fragmentShader.glsl");
-
 	glClearColor(0.9, 0.9, 0.9, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	// activate shader program
 	glUseProgram(program);
-
-	// if the VAO already exists, make that buffer the current active one
-	//glBindBuffer(GL_ARRAY_BUFFER, VAO[0]);
 }
 
-void generateCircleVertices1(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+void generateCircleVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h, int index) {
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
+	
 	for (int i = 0; i < numOfCircleVertices; i++) {
-		clockFrameVertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
+		clockVertex[index][i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
 		theta += increment;
 	}
-	glBindVertexArray(VAO[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockFrameVertex), clockFrameVertex);
+
+	glBindVertexArray(VAO[index]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockVertex[index]), clockVertex[index]);
 }
 
-void generateCircleVertices2(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
-	float theta = 0.0;
-	float increment = 2 * PI / numOfCircleVertices;
-	for (int i = 0; i < numOfCircleVertices; i++) {
-		clockBodyVertex[i] = { (cos(theta) * w / 2) + x, (sin(theta) * h / 2) + y };
-		theta += increment;
-	}
-	glBindVertexArray(VAO[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockBodyVertex), clockBodyVertex);
-}
-
-void drawCircle1() {
-	glBindVertexArray(VAO[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+void drawCircle(int index) {
 	int uniformLocation;
 	uniformLocation = glGetUniformLocation(program, "color");
+
+	glBindVertexArray(VAO[index]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
 	glUniform4f(uniformLocation, 1.0, 0.0, 0.0, 1.0);
-	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
-	glFlush();
-}
-
-void drawCircle2() {
-	glBindVertexArray(VAO[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	int uniformLocation;
-	uniformLocation = glGetUniformLocation(program, "color");
-	glUniform4f(uniformLocation, 0.0, 1.0, 0.0, 1.0);
 	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
 	glFlush();
 }
@@ -225,14 +195,14 @@ void drawFrame() {
 void display(void) {
 	//glClear(GL_COLOR_BUFFER_BIT);
 
-	generateCircleVertices1(0, 0, 1.0, 1.0);
-	drawCircle1();
+	generateCircleVertices(0, 0, 1.0, 1.0, 0);
+	drawCircle(0);
 
-	generateCircleVertices2(0, 0, 0.7, 0.7);
-	drawCircle2();
-	
+	generateCircleVertices(0, 0, 0.7, 0.7, 1);
+	drawCircle(1);
+
 	//drawFrame();
-	
+
 	glFlush();
 }
 
