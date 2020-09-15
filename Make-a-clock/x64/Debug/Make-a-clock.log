@@ -1,5 +1,9 @@
 ﻿  main.cpp
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(157,33): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(164,48): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(192,43): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(166,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(167,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(168,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(196,33): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(204,48): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(229,41): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(231,41): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
   Make-a-clock.vcxproj -> C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe

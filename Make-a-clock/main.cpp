@@ -6,15 +6,23 @@
 #include <cmath>
 
 // openGL variables
-GLuint VBO[2];		// ID for Vertex Buffer Objects
 GLuint VAO[2];		// ID for Vertex Array Objects
+
+GLuint VBO[4];		// ID for Vertex Buffer Objects:
+					// VBO[0] is for Clock Frame Vertices
+					// VBO[1] is for Clock Frame Color
+					// VBO[2] is for Clock Body Vertices
+					// VBO[3] is for Clock Body Color
+
 GLuint program;
 
-// constants
-const double PI = 3.14159;
-const unsigned int numOfCircleVertices = 100;
 
 // clock options
+enum Clock :int {
+	FRAME,	// Clock Frame == Outer circle
+	BODY	// Clock Body == Inner circle
+};
+
 enum MenuOption :int {
 	ROUND, SQUARE,
 	SHOW, HIDE,
@@ -28,8 +36,17 @@ struct coordinate {
 	GLfloat y;
 };
 
+// constants
+const double PI = 3.14159;
+const unsigned int numOfCircleVertices = 100;
+
+// clockVertex[0] is Clock Frame, clockVertex[1] is Clock Body
 coordinate clockVertex[2][numOfCircleVertices];
-float clockSize = 1;
+
+// color[Red Option,Green Option, Blue Option][100][R value, G value, B value]
+GLfloat color[3][numOfCircleVertices][3];
+
+float clockSize = 1.0f;
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -143,14 +160,36 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 }
 
 void init(void) {
+	// initialize color array
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < numOfCircleVertices; j++) {
+			color[i][j][0] = (i == 0 ? 0.5 : 0.0);	// if i == 0, color is Red
+			color[i][j][1] = (i == 1 ? 0.5 : 0.0);	// if i == 1, color is Green
+			color[i][j][2] = (i == 2 ? 0.5 : 0.0);	// if i == 2, color is Blue
+		}
+	}
+
 	glGenVertexArrays(2, VAO);
-	glGenBuffers(2, VBO);
+	glGenBuffers(4, VBO);
 	for (int index = 0; index < 2; index++) {
 		glBindVertexArray(VAO[index]);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
+
+		// clock vertices
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(clockVertex[index]), clockVertex[index], GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+
+		// clock color
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * 100 * 3 * sizeof(GLfloat)));
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(1 * 100 * 3 * sizeof(GLfloat)));
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * 100 * 3 * sizeof(GLfloat)));
+
 		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
 	}
 
 	program = loadShaders("vertexShader.glsl", "fragmentShader.glsl");
@@ -159,27 +198,27 @@ void init(void) {
 	glUseProgram(program);
 }
 
+// index is to determine if it is clock 'FRAME or BODY'
 void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
 
+	// generate 100 vertex points
 	for (int i = 0; i < numOfCircleVertices; i++) {
 		clockVertex[index][i] = { (cos(theta) * r / 2) + x, (sin(theta) * r / 2) + y };
 		theta += increment;
 	}
 
 	glBindVertexArray(VAO[index]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockVertex[index]), clockVertex[index]);
 }
 
 void drawCircle(int index) {
-	int uniformLocation;
-	uniformLocation = glGetUniformLocation(program, "color");
+	int uniformLocation = glGetUniformLocation(program, "colorChoice");
 
 	glBindVertexArray(VAO[index]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[index]);
-	glUniform4f(uniformLocation, 1.0, 0.0, 0.0, 1.0);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 	glDrawArrays(GL_LINE_LOOP, 0, numOfCircleVertices);
 	glFlush();
 }
@@ -187,17 +226,30 @@ void drawCircle(int index) {
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	generateCircleVertices(0, 0, clockSize, 0);
-	drawCircle(0);
-	generateCircleVertices(0, 0, clockSize * 0.75, 1);
-	drawCircle(1);
+	generateCircleVertices(0, 0, clockSize * 1.00, FRAME);
+	drawCircle(FRAME);
+	generateCircleVertices(0, 0, clockSize * 0.75, BODY);
+	drawCircle(BODY);
 
 	glFlush();
 }
 
 void processMenuEvents(int option) {
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
+
 	switch (static_cast<MenuOption>(option)) {
+		// color options
+	case MenuOption::RED:
+		glUniform1i(uniformLocation, 1);
+		break;
+	case MenuOption::GREEN:
+		glUniform1i(uniformLocation, 2);
+		break;
+	case MenuOption::BLUE:
+		glUniform1i(uniformLocation, 3);
+		break;
+
+		// size options
 	case MenuOption::SMALL:
 		clockSize = 0.75;
 		break;
@@ -210,9 +262,11 @@ void processMenuEvents(int option) {
 	case MenuOption::EXIT:
 		exit(0);
 		break;
+
 	default:
 		break;
 	}
+
 	glutPostRedisplay();
 }
 
@@ -223,11 +277,11 @@ void createMenu() {
 	//glutAddMenuEntry("Round", ROUND);
 	//glutAddMenuEntry("Square", SQUARE);
 
-	//// > clock color menu
-	//int clockColorMenu = glutCreateMenu(processMenuEvents);
-	//glutAddMenuEntry("Red", RED);
-	//glutAddMenuEntry("Green", GREEN);
-	//glutAddMenuEntry("Blue", BLUE);
+	// > clock color menu
+	int clockColorMenu = glutCreateMenu(processMenuEvents);
+	glutAddMenuEntry("Red", RED);
+	glutAddMenuEntry("Green", GREEN);
+	glutAddMenuEntry("Blue", BLUE);
 
 	//// > clock digits menu
 	//int clockDigitsMenu = glutCreateMenu(processMenuEvents);
@@ -241,10 +295,10 @@ void createMenu() {
 	glutAddMenuEntry("Large", LARGE);
 
 	// main menu
-	int menu = glutCreateMenu(processMenuEvents);
 	//glutAddSubMenu("Shape", clockShapeMenu);
-	//glutAddSubMenu("Color", clockColorMenu);
 	//glutAddSubMenu("Digits", clockDigitsMenu);
+	int menu = glutCreateMenu(processMenuEvents);
+	glutAddSubMenu("Color", clockColorMenu);
 	glutAddSubMenu("Size", clockSizeMenu);
 	glutAddMenuEntry("Exit", EXIT);
 
