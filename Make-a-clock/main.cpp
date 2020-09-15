@@ -6,16 +6,13 @@
 #include <cmath>
 
 // openGL variables
+GLuint program;
 GLuint VAO[2];		// ID for Vertex Array Objects
-
 GLuint VBO[4];		// ID for Vertex Buffer Objects:
 					// VBO[0] is for Clock Frame Vertices
 					// VBO[1] is for Clock Frame Color
 					// VBO[2] is for Clock Body Vertices
 					// VBO[3] is for Clock Body Color
-
-GLuint program;
-
 
 // clock options
 enum Clock :int {
@@ -48,6 +45,7 @@ coordinate clockVertex[2][numOfCircleVertices];
 GLfloat color[numOfColors][numOfCircleVertices][3];
 
 float clockSize = 1.0f;
+int frameColor = 1;
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -190,16 +188,12 @@ void init(void) {
 		// clock color
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * 100 * 3 * sizeof(GLfloat)));
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(1 * 100 * 3 * sizeof(GLfloat)));
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(2 * 100 * 3 * sizeof(GLfloat)));
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(3 * 100 * 3 * sizeof(GLfloat)));
-
 		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glEnableVertexAttribArray(3);
-		glEnableVertexAttribArray(4);
+
+		for (int i = 0; i < numOfColors; i++) {
+			glVertexAttribPointer(i + 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(i * 100 * 3 * sizeof(GLfloat)));
+			glEnableVertexAttribArray(i + 1);
+		}
 	}
 
 	program = loadShaders("vertexShader.glsl", "fragmentShader.glsl");
@@ -229,9 +223,16 @@ void drawCircle(int index) {
 
 	glBindVertexArray(VAO[index]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
-	if (index == BODY) {
+
+	switch (index) {
+	case BODY:
 		glUniform1i(uniformLocation, 4);
+		break;
+	case FRAME:
+		glUniform1i(uniformLocation, frameColor);
+		break;
 	}
+
 	glDrawArrays(GL_POLYGON, 0, numOfCircleVertices);
 	glFlush();
 }
@@ -253,13 +254,13 @@ void processMenuEvents(int option) {
 	switch (static_cast<MenuOption>(option)) {
 		// color options
 	case MenuOption::RED:
-		glUniform1i(uniformLocation, 1);
+		frameColor = 1;
 		break;
 	case MenuOption::GREEN:
-		glUniform1i(uniformLocation, 2);
+		frameColor = 2;
 		break;
 	case MenuOption::BLUE:
-		glUniform1i(uniformLocation, 3);
+		frameColor = 3;
 		break;
 
 		// size options
