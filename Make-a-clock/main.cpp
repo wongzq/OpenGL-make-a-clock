@@ -47,6 +47,9 @@ coordinate clockVertex[2][numOfCircleVertices];
 color colorOptions[numOfColors][numOfCircleVertices];
 
 float clockSize = 1.0f;
+int x_offset = 10;
+int y_offset = 10;
+int diameter = 180;
 int clockColor = ColorOption::CYAN_COLOR;
 
 // function to load shaders
@@ -207,7 +210,6 @@ void init(void) {
 
 // index is to determine if it is clock 'FRAME or BODY'
 void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
-	glUseProgram(program);
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
 
@@ -223,7 +225,6 @@ void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
 }
 
 void drawCircle(int index) {
-	glUseProgram(program);
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
 	glBindVertexArray(VAO[index]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
@@ -242,7 +243,6 @@ void drawCircle(int index) {
 }
 
 void renderBitmapCharacter(int x, int y, void* font, char* string) {
-	glRasterPos2d(x, y);
 	switch (clockColor) {
 	case ColorOption::CYAN_COLOR:
 		glColor3f((GLfloat)0.5, (GLfloat)1.0, (GLfloat)1.0);
@@ -254,25 +254,22 @@ void renderBitmapCharacter(int x, int y, void* font, char* string) {
 		glColor3f((GLfloat)1.0, (GLfloat)1.0, (GLfloat)0.5);
 		break;
 	}
+	glRasterPos2d(x, y);
 	glutBitmapString(font, (const unsigned char*)string);
 }
 
 void drawDigits() {
 	// disable the shader program
 	glUseProgram(0);
+
 	// use OpenGL fixed pipeline functions
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
 	gluOrtho2D(-window_w / 2, window_w / 2, -window_h / 2, window_h / 2);
 
 	const int numOfDigits = 12;
 	float theta = PI / 2;
 	float increment = 2 * PI / numOfDigits;
-	int diameter = 180;
-
-	int x_offset = 10;
-	int y_offset = 10;
 
 	for (int i = 0; i < numOfDigits; i++) {
 		GLfloat x = (cos(theta) * diameter / 2) - x_offset;
@@ -280,6 +277,9 @@ void drawDigits() {
 		theta -= increment;
 		renderBitmapCharacter(x, y, (void*)font, (char*)std::to_string(i == 0 ? 12 : i).c_str());
 	}
+
+	// enable the shader program
+	glUseProgram(program);
 }
 
 void display(void) {
@@ -317,12 +317,24 @@ void processMenuEvents(int option) {
 		// size options
 	case MenuOption::SMALL:
 		clockSize = 0.75;
+		x_offset = 5;
+		y_offset = 5;
+		diameter = 135;
+		font = GLUT_BITMAP_TIMES_ROMAN_10;
 		break;
 	case MenuOption::MEDIUM:
 		clockSize = 1;
+		x_offset = 10;
+		y_offset = 10;
+		diameter = 180;
+		font = GLUT_BITMAP_TIMES_ROMAN_24;
 		break;
 	case MenuOption::LARGE:
 		clockSize = 1.5;
+		x_offset = 10;
+		y_offset = 10;
+		diameter = 270;
+		font = GLUT_BITMAP_TIMES_ROMAN_24;
 		break;
 	case MenuOption::EXIT:
 		exit(0);
@@ -337,11 +349,11 @@ void processMenuEvents(int option) {
 
 void createMenu() {
 	//// > clock shape menu
-//int clockShapeMenu = glutCreateMenu(processMenuEvents);
-//glutAddMenuEntry("Round", ROUND);
-//glutAddMenuEntry("Square", SQUARE);
+	//int clockShapeMenu = glutCreateMenu(processMenuEvents);
+	//glutAddMenuEntry("Round", ROUND);
+	//glutAddMenuEntry("Square", SQUARE);
 
-// > clock color menu
+	// > clock color menu
 	int clockColorMenu = glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Cyan", CYAN);
 	glutAddMenuEntry("Magenta", MAGENTA);
@@ -359,10 +371,10 @@ void createMenu() {
 	glutAddMenuEntry("Large", LARGE);
 
 	// main menu
-	//glutAddSubMenu("Shape", clockShapeMenu);
-	//glutAddSubMenu("Digits", clockDigitsMenu);
 	int menu = glutCreateMenu(processMenuEvents);
+	//glutAddSubMenu("Shape", clockShapeMenu);
 	glutAddSubMenu("Color", clockColorMenu);
+	//glutAddSubMenu("Digits", clockDigitsMenu);
 	glutAddSubMenu("Size", clockSizeMenu);
 	glutAddMenuEntry("Exit", EXIT);
 
