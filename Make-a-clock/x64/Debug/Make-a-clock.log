@@ -1,2 +1,4 @@
 ﻿  main.cpp
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(281,28): warning C4244: 'argument': conversion from 'GLfloat' to 'int', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(281,25): warning C4244: 'argument': conversion from 'GLfloat' to 'int', possible loss of data
   Make-a-clock.vcxproj -> C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe

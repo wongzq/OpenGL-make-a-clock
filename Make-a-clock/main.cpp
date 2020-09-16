@@ -20,27 +20,25 @@ enum Clock :int {
 	BODY,			// Clock Body == Inner circle
 	CLOCK_LENGTH	// Length of Clock enum
 };
-
 enum MenuOption :int {
 	ROUND, SQUARE,
 	SHOW, HIDE,
 	SMALL, MEDIUM, LARGE,
-	RED, GREEN, BLUE,
+	CYAN, MAGENTA, YELLOW,
 	EXIT
 };
-
-struct coordinate {
-	GLfloat x, y;
+enum ColorOption :int {
+	NOTHING, CYAN_COLOR, MAGENTA_COLOR, YELLOW_COLOR
 };
-
-struct color {
-	GLfloat r, g, b;
-};
+struct coordinate { GLfloat x, y; };
+struct color { GLfloat r, g, b; };
 
 // constants
+const int window_w = 600, window_h = 600;
 const float PI = 3.14159f;
 const unsigned int numOfCircleVertices = 100;
 const int numOfColors = 4;
+void* font = GLUT_BITMAP_TIMES_ROMAN_24;
 
 // clockVertex[0] is Clock Frame, clockVertex[1] is Clock Body
 coordinate clockVertex[2][numOfCircleVertices];
@@ -49,7 +47,7 @@ coordinate clockVertex[2][numOfCircleVertices];
 color colorOptions[numOfColors][numOfCircleVertices];
 
 float clockSize = 1.0f;
-int clockColor = 1;
+int clockColor = ColorOption::CYAN_COLOR;
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -167,12 +165,15 @@ void init(void) {
 	for (int i = 0; i < numOfColors; i++) {
 		for (int j = 0; j < numOfCircleVertices; j++) {
 			if (i == 3) {
-				colorOptions[i][j] = { GLfloat(0.7), GLfloat(0.7), GLfloat(0.7) };
+				colorOptions[i][j] = { (GLfloat)0.7, (GLfloat)0.7, (GLfloat)0.7 };
 			}
 			else {
-				colorOptions[i][j].r = (GLfloat)(i == 0 ? 0.5 : 0.0);	// if i == 0, color is Red
-				colorOptions[i][j].g = (GLfloat)(i == 1 ? 0.5 : 0.0);	// if i == 1, color is Green
-				colorOptions[i][j].b = (GLfloat)(i == 2 ? 0.5 : 0.0);	// if i == 2, color is Blue
+				// if i == 0, color is Magenta
+				// if i == 1, color is Yellow
+				// if i == 2, color is Cyan
+				colorOptions[i][j].r = (GLfloat)(i == 1 || i == 2 ? 0.85 : 0.3);
+				colorOptions[i][j].g = (GLfloat)(i == 2 || i == 0 ? 0.85 : 0.3);
+				colorOptions[i][j].b = (GLfloat)(i == 0 || i == 1 ? 0.85 : 0.3);
 			}
 		}
 	}
@@ -206,6 +207,7 @@ void init(void) {
 
 // index is to determine if it is clock 'FRAME or BODY'
 void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
+	glUseProgram(program);
 	float theta = 0.0;
 	float increment = 2 * PI / numOfCircleVertices;
 
@@ -221,8 +223,8 @@ void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
 }
 
 void drawCircle(int index) {
+	glUseProgram(program);
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
-
 	glBindVertexArray(VAO[index]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 
@@ -236,7 +238,48 @@ void drawCircle(int index) {
 	}
 
 	glDrawArrays(GL_POLYGON, 0, numOfCircleVertices);
-	glFlush();
+	//glFlush();
+}
+
+void renderBitmapCharacter(int x, int y, void* font, char* string) {
+	glRasterPos2d(x, y);
+	switch (clockColor) {
+	case ColorOption::CYAN_COLOR:
+		glColor3f((GLfloat)0.5, (GLfloat)1.0, (GLfloat)1.0);
+		break;
+	case ColorOption::MAGENTA_COLOR:
+		glColor3f((GLfloat)1.0, (GLfloat)0.5, (GLfloat)1.0);
+		break;
+	case ColorOption::YELLOW_COLOR:
+		glColor3f((GLfloat)1.0, (GLfloat)1.0, (GLfloat)0.5);
+		break;
+	}
+	glutBitmapString(font, (const unsigned char*)string);
+}
+
+void drawDigits() {
+	// disable the shader program
+	glUseProgram(0);
+	// use OpenGL fixed pipeline functions
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	gluOrtho2D(-window_w / 2, window_w / 2, -window_h / 2, window_h / 2);
+
+	const int numOfDigits = 12;
+	float theta = PI / 2;
+	float increment = 2 * PI / numOfDigits;
+	int diameter = 180;
+
+	int x_offset = 10;
+	int y_offset = 10;
+
+	for (int i = 0; i < numOfDigits; i++) {
+		GLfloat x = (cos(theta) * diameter / 2) - x_offset;
+		GLfloat y = (sin(theta) * diameter / 2) - y_offset;
+		theta -= increment;
+		renderBitmapCharacter(x, y, (void*)font, (char*)std::to_string(i == 0 ? 12 : i).c_str());
+	}
 }
 
 void display(void) {
@@ -250,6 +293,9 @@ void display(void) {
 	generateCircleVertices(0, 0, GLfloat(clockSize * 0.75), BODY);
 	drawCircle(BODY);
 
+	// clock digits
+	drawDigits();
+
 	glFlush();
 }
 
@@ -258,14 +304,14 @@ void processMenuEvents(int option) {
 
 	switch (static_cast<MenuOption>(option)) {
 		// color options
-	case MenuOption::RED:
-		clockColor = 1;
+	case MenuOption::CYAN:
+		clockColor = ColorOption::CYAN_COLOR;
 		break;
-	case MenuOption::GREEN:
-		clockColor = 2;
+	case MenuOption::MAGENTA:
+		clockColor = ColorOption::MAGENTA_COLOR;
 		break;
-	case MenuOption::BLUE:
-		clockColor = 3;
+	case MenuOption::YELLOW:
+		clockColor = ColorOption::YELLOW_COLOR;
 		break;
 
 		// size options
@@ -297,9 +343,9 @@ void createMenu() {
 
 // > clock color menu
 	int clockColorMenu = glutCreateMenu(processMenuEvents);
-	glutAddMenuEntry("Red", RED);
-	glutAddMenuEntry("Green", GREEN);
-	glutAddMenuEntry("Blue", BLUE);
+	glutAddMenuEntry("Cyan", CYAN);
+	glutAddMenuEntry("Magenta", MAGENTA);
+	glutAddMenuEntry("Yellow", YELLOW);
 
 	//// > clock digits menu
 	//int clockDigitsMenu = glutCreateMenu(processMenuEvents);
@@ -326,7 +372,7 @@ void createMenu() {
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
-	glutInitWindowSize(600, 600);
+	glutInitWindowSize(window_w, window_h);
 	glutInitWindowPosition(50, 25);
 	glutCreateWindow("Make a Clock");
 
