@@ -1,11 +1,2 @@
 ﻿  main.cpp
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(166,25): warning C4305: '=': truncation from 'double' to 'GLfloat'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(167,25): warning C4305: '=': truncation from 'double' to 'GLfloat'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(168,25): warning C4305: '=': truncation from 'double' to 'GLfloat'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(171,25): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(172,25): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(173,25): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(208,48): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(243,41): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(245,41): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
   Make-a-clock.vcxproj -> C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe

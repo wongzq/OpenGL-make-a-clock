@@ -16,8 +16,9 @@ GLuint VBO[4];		// ID for Vertex Buffer Objects:
 
 // clock options
 enum Clock :int {
-	FRAME,	// Clock Frame == Outer circle
-	BODY	// Clock Body == Inner circle
+	FRAME,			// Clock Frame == Outer circle
+	BODY,			// Clock Body == Inner circle
+	CLOCK_LENGTH	// Length of Clock enum
 };
 
 enum MenuOption :int {
@@ -29,12 +30,15 @@ enum MenuOption :int {
 };
 
 struct coordinate {
-	GLfloat x;
-	GLfloat y;
+	GLfloat x, y;
+};
+
+struct color {
+	GLfloat r, g, b;
 };
 
 // constants
-const double PI = 3.14159;
+const float PI = 3.14159f;
 const unsigned int numOfCircleVertices = 100;
 const int numOfColors = 4;
 
@@ -42,10 +46,10 @@ const int numOfColors = 4;
 coordinate clockVertex[2][numOfCircleVertices];
 
 // color[Red Option,Green Option, Blue Option][100][R value, G value, B value]
-GLfloat color[numOfColors][numOfCircleVertices][3];
+color colorOptions[numOfColors][numOfCircleVertices];
 
 float clockSize = 1.0f;
-int frameColor = 1;
+int clockColor = 1;
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -163,21 +167,19 @@ void init(void) {
 	for (int i = 0; i < numOfColors; i++) {
 		for (int j = 0; j < numOfCircleVertices; j++) {
 			if (i == 3) {
-				color[i][j][0] = 0.8;
-				color[i][j][1] = 0.8;
-				color[i][j][2] = 0.8;
+				colorOptions[i][j] = { GLfloat(0.7), GLfloat(0.7), GLfloat(0.7) };
 			}
 			else {
-				color[i][j][0] = (i == 0 ? 0.5 : 0.0);	// if i == 0, color is Red
-				color[i][j][1] = (i == 1 ? 0.5 : 0.0);	// if i == 1, color is Green
-				color[i][j][2] = (i == 2 ? 0.5 : 0.0);	// if i == 2, color is Blue
+				colorOptions[i][j].r = (GLfloat)(i == 0 ? 0.5 : 0.0);	// if i == 0, color is Red
+				colorOptions[i][j].g = (GLfloat)(i == 1 ? 0.5 : 0.0);	// if i == 1, color is Green
+				colorOptions[i][j].b = (GLfloat)(i == 2 ? 0.5 : 0.0);	// if i == 2, color is Blue
 			}
 		}
 	}
 
 	glGenVertexArrays(2, VAO);
 	glGenBuffers(4, VBO);
-	for (int index = 0; index < 2; index++) {
+	for (int index = 0; index < Clock::CLOCK_LENGTH; index++) {
 		glBindVertexArray(VAO[index]);
 
 		// clock vertices
@@ -187,11 +189,11 @@ void init(void) {
 
 		// clock color
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(colorOptions), colorOptions, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
 
 		for (int i = 0; i < numOfColors; i++) {
-			glVertexAttribPointer(i + 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(i * 100 * 3 * sizeof(GLfloat)));
+			glVertexAttribPointer(i + 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)((unsigned long long) i * 100 * 3 * sizeof(GLfloat)));
 			glEnableVertexAttribArray(i + 1);
 		}
 	}
@@ -229,7 +231,7 @@ void drawCircle(int index) {
 		glUniform1i(uniformLocation, 4);
 		break;
 	case FRAME:
-		glUniform1i(uniformLocation, frameColor);
+		glUniform1i(uniformLocation, clockColor);
 		break;
 	}
 
@@ -240,9 +242,12 @@ void drawCircle(int index) {
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	generateCircleVertices(0, 0, clockSize * 1.00, FRAME);
+	// clock frame
+	generateCircleVertices(0, 0, GLfloat(clockSize * 1.00), FRAME);
 	drawCircle(FRAME);
-	generateCircleVertices(0, 0, clockSize * 0.75, BODY);
+
+	// clock body
+	generateCircleVertices(0, 0, GLfloat(clockSize * 0.75), BODY);
 	drawCircle(BODY);
 
 	glFlush();
@@ -254,13 +259,13 @@ void processMenuEvents(int option) {
 	switch (static_cast<MenuOption>(option)) {
 		// color options
 	case MenuOption::RED:
-		frameColor = 1;
+		clockColor = 1;
 		break;
 	case MenuOption::GREEN:
-		frameColor = 2;
+		clockColor = 2;
 		break;
 	case MenuOption::BLUE:
-		frameColor = 3;
+		clockColor = 3;
 		break;
 
 		// size options
@@ -284,14 +289,13 @@ void processMenuEvents(int option) {
 	glutPostRedisplay();
 }
 
-
 void createMenu() {
 	//// > clock shape menu
-	//int clockShapeMenu = glutCreateMenu(processMenuEvents);
-	//glutAddMenuEntry("Round", ROUND);
-	//glutAddMenuEntry("Square", SQUARE);
+//int clockShapeMenu = glutCreateMenu(processMenuEvents);
+//glutAddMenuEntry("Round", ROUND);
+//glutAddMenuEntry("Square", SQUARE);
 
-	// > clock color menu
+// > clock color menu
 	int clockColorMenu = glutCreateMenu(processMenuEvents);
 	glutAddMenuEntry("Red", RED);
 	glutAddMenuEntry("Green", GREEN);
