@@ -4,15 +4,23 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <chrono>
+#include <ctime>
 
 // openGL variables
 GLuint program;
-GLuint VAO[2];		// ID for Vertex Array Objects
-GLuint VBO[4];		// ID for Vertex Buffer Objects:
+GLuint VAO[3];		// ID for Vertex Array Objects:
+					// VAO[0] is for Clock Frame
+					// VAO[1] is for Clock Body
+					// VAO[2] is for Clock Hands
+
+GLuint VBO[6];		// ID for Vertex Buffer Objects:
 					// VBO[0] is for Clock Frame Vertices
 					// VBO[1] is for Clock Frame Color
 					// VBO[2] is for Clock Body Vertices
 					// VBO[3] is for Clock Body Color
+					// VBO[4] is for Clock Hand Vertices
+					// VBO[5] is for Clock Hand Color
 
 // clock options
 enum Clock :int {
@@ -42,13 +50,14 @@ void* font = GLUT_BITMAP_TIMES_ROMAN_24;
 
 // clockVertex[0] is Clock Frame, clockVertex[1] is Clock Body
 coordinate clockVertex[2][numOfCircleVertices];
-
-// color[Red Option,Green Option, Blue Option][100][R value, G value, B value]
 color colorOptions[numOfColors][numOfCircleVertices];
 
+coordinate secHand[3];
+color clockHandColor[3];
+
 float clockSize = 1.0f;
-int x_offset = 10;
-int y_offset = 10;
+int xOffset = 10;
+int yOffset = 10;
 int diameter = 180;
 int clockColor = ColorOption::CYAN_COLOR;
 
@@ -181,8 +190,10 @@ void init(void) {
 		}
 	}
 
-	glGenVertexArrays(2, VAO);
-	glGenBuffers(4, VBO);
+	glGenVertexArrays(3, VAO);
+	glGenBuffers(6, VBO);
+
+	// clock frame and body
 	for (int index = 0; index < Clock::CLOCK_LENGTH; index++) {
 		glBindVertexArray(VAO[index]);
 
@@ -190,22 +201,41 @@ void init(void) {
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(clockVertex[index]), clockVertex[index], GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+		glEnableVertexAttribArray(0);
 
 		// clock color
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(colorOptions), colorOptions, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-
 		for (int i = 0; i < numOfColors; i++) {
 			glVertexAttribPointer(i + 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)((unsigned long long) i * 100 * 3 * sizeof(GLfloat)));
 			glEnableVertexAttribArray(i + 1);
 		}
 	}
 
+	// clock hands
+	glBindVertexArray(VAO[2]);
+	// clock hand vertices
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[2 * 2 + 0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(secHand), secHand, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// clock hand color
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO[2 * 2 + 1]);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(clockHandColor), clockHandColor, GL_STATIC_DRAW);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//glEnableVertexAttribArray(1);
+
+	std::cout << sizeof(secHand) << std::endl;
+	std::cout << sizeof(clockHandColor) << std::endl;
+
+	// program
 	program = loadShaders("vertexShader.glsl", "fragmentShader.glsl");
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(program);
+
+	glPointSize(3);
+	glLineWidth(3);
 }
 
 // index is to determine if it is clock 'FRAME or BODY'
@@ -239,19 +269,18 @@ void drawCircle(int index) {
 	}
 
 	glDrawArrays(GL_POLYGON, 0, numOfCircleVertices);
-	//glFlush();
 }
 
 void renderBitmapCharacter(int x, int y, void* font, char* string) {
 	switch (clockColor) {
 	case ColorOption::CYAN_COLOR:
-		glColor3f((GLfloat)0.5, (GLfloat)1.0, (GLfloat)1.0);
+		glColor3f((GLfloat)0.0, (GLfloat)1.0, (GLfloat)1.0);
 		break;
 	case ColorOption::MAGENTA_COLOR:
-		glColor3f((GLfloat)1.0, (GLfloat)0.5, (GLfloat)1.0);
+		glColor3f((GLfloat)1.0, (GLfloat)0.0, (GLfloat)1.0);
 		break;
 	case ColorOption::YELLOW_COLOR:
-		glColor3f((GLfloat)1.0, (GLfloat)1.0, (GLfloat)0.5);
+		glColor3f((GLfloat)1.0, (GLfloat)1.0, (GLfloat)0.0);
 		break;
 	}
 	glRasterPos2d(x, y);
@@ -272,8 +301,8 @@ void drawDigits() {
 	float increment = 2 * PI / numOfDigits;
 
 	for (int i = 0; i < numOfDigits; i++) {
-		GLfloat x = (cos(theta) * diameter / 2) - x_offset;
-		GLfloat y = (sin(theta) * diameter / 2) - y_offset;
+		int x = (int)(cos(theta) * diameter / 2) - xOffset;
+		int y = (int)(sin(theta) * diameter / 2) - yOffset;
 		theta -= increment;
 		renderBitmapCharacter(x, y, (void*)font, (char*)std::to_string(i == 0 ? 12 : i).c_str());
 	}
@@ -282,19 +311,81 @@ void drawDigits() {
 	glUseProgram(program);
 }
 
+void drawSecHand() {
+	secHand[0].x = (GLfloat)0.1;
+	secHand[0].y = (GLfloat)0.1;
+	secHand[1].x = (GLfloat)0.2;
+	secHand[1].y = (GLfloat)0.2;
+	secHand[2].x = (GLfloat)0.3;
+	secHand[2].y = (GLfloat)0.3;
+
+	std::cout << secHand[0].x << " " << secHand[0].y << std::endl;
+	std::cout << secHand[1].x << " " << secHand[1].y << std::endl;
+	std::cout << secHand[2].x << " " << secHand[2].y << std::endl;
+
+	glBindVertexArray(VAO[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(secHand), secHand);
+
+	//int uniformLocation = glGetUniformLocation(program, "colorChoice");
+	glBindVertexArray(VAO[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[5]);
+	glBufferSubData(GL_ARRAY_BUFFER, 1, sizeof(clockHandColor), clockHandColor);
+	//glUniform1i(uniformLocation, 1);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void updateTime(int _) {
+	time_t curTime = time(0);
+	tm* localTime = new tm;
+	localtime_s(localTime, &curTime);
+
+	float theta = localTime->tm_sec / 60 * 2 * PI;
+	//secHand[0].x = cos(theta) * (diameter * 0.8) / 2.0 + 0.0;
+	//secHand[0].y = sin(theta) * (diameter * 0.8) / 2.0 + 0.0;
+
+	//secHand[1].x = cos(theta) * (diameter * 0.1) / 2.0 + 1.0;
+	//secHand[1].y = sin(theta) * (diameter * 0.1) / 2.0 + 0.0;
+
+	//secHand[2].x = cos(theta) * (diameter * 0.1) / 2.0 - 1.0;
+	//secHand[2].y = sin(theta) * (diameter * 0.1) / 2.0 + 0.0;
+	secHand[0].x = (GLfloat)0.1;
+	secHand[0].y = (GLfloat)0.1;
+	secHand[1].x = (GLfloat)0.2;
+	secHand[1].y = (GLfloat)0.2;
+	secHand[2].x = (GLfloat)0.3;
+	secHand[2].y = (GLfloat)0.3;
+
+	std::cout << secHand[0].x << " " << secHand[0].y << std::endl;
+	std::cout << secHand[1].x << " " << secHand[1].y << std::endl;
+	std::cout << secHand[2].x << " " << secHand[2].y << std::endl;
+
+	glBindVertexArray(VAO[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[4]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(secHand), secHand);
+
+	//glutTimerFunc(1000, updateTime, 0);
+	glFlush();
+}
+
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// clock frame
-	generateCircleVertices(0, 0, GLfloat(clockSize * 1.00), FRAME);
-	drawCircle(FRAME);
+	//// clock frame
+	//generateCircleVertices(0, 0, GLfloat(clockSize * 1.00), FRAME);
+	//drawCircle(FRAME);
 
-	// clock body
-	generateCircleVertices(0, 0, GLfloat(clockSize * 0.75), BODY);
-	drawCircle(BODY);
+	//// clock body
+	//generateCircleVertices(0, 0, GLfloat(clockSize * 0.75), BODY);
+	//drawCircle(BODY);
 
-	// clock digits
-	drawDigits();
+	//// clock digits
+	//drawDigits();
+
+	// clock hands
+	//updateTime(0);
+	drawSecHand();
 
 	glFlush();
 }
@@ -317,22 +408,22 @@ void processMenuEvents(int option) {
 		// size options
 	case MenuOption::SMALL:
 		clockSize = 0.75;
-		x_offset = 5;
-		y_offset = 5;
+		xOffset = 5;
+		yOffset = 5;
 		diameter = 135;
 		font = GLUT_BITMAP_TIMES_ROMAN_10;
 		break;
 	case MenuOption::MEDIUM:
 		clockSize = 1;
-		x_offset = 10;
-		y_offset = 10;
+		xOffset = 10;
+		yOffset = 10;
 		diameter = 180;
 		font = GLUT_BITMAP_TIMES_ROMAN_24;
 		break;
 	case MenuOption::LARGE:
 		clockSize = 1.5;
-		x_offset = 10;
-		y_offset = 10;
+		xOffset = 10;
+		yOffset = 10;
 		diameter = 270;
 		font = GLUT_BITMAP_TIMES_ROMAN_24;
 		break;
@@ -392,6 +483,7 @@ int main(int argc, char** argv) {
 	init();
 	createMenu();
 	glutDisplayFunc(display);
+	//glutTimerFunc(1000, updateTime, 0);
 
 	glutMainLoop();
 }
