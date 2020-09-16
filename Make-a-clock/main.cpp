@@ -34,6 +34,9 @@ enum Clock :int {
 	BODY,			// Clock Body == Inner circle
 	CLOCK_LENGTH	// Length of Clock enum
 };
+enum Hand :int {
+	SEC, MIN, HOUR, HAND_LENGTH
+};
 enum MenuOption :int {
 	ROUND, SQUARE,
 	SHOW, HIDE,
@@ -52,6 +55,7 @@ const int window_w = 600, window_h = 600;
 const float PI = 3.14159f;
 const unsigned int numOfCircleVertices = 100;
 const int numOfColors = 4;
+const int interval = 100;
 void* font = GLUT_BITMAP_TIMES_ROMAN_24;
 
 // clockVertex[0] is Clock Frame, clockVertex[1] is Clock Body
@@ -223,7 +227,7 @@ void init(void) {
 	}
 
 	// clock hands
-	for (int index = 0; index < 3; index++) {
+	for (int index = 0; index < Hand::HAND_LENGTH; index++) {
 		glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
 		// clock hand vertices
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) * 2 + 0]);
@@ -267,10 +271,10 @@ void drawCircle(int index) {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 
 	switch (index) {
-	case BODY:
+	case Clock::BODY:
 		glUniform1i(uniformLocation, 4);
 		break;
-	case FRAME:
+	case Clock::FRAME:
 		glUniform1i(uniformLocation, clockColor);
 		break;
 	}
@@ -334,32 +338,27 @@ void updateTime(int _) {
 	localtime_s(localTime, &curTime);
 
 	for (int index = 0; index < 3; index++) {
-		double theta = 0;
-		double handLength = 0;
-		switch (index) {
-		case 0:
-			// second hand
-			theta = -(localTime->tm_sec / 60.0 * 2.0 * PI) + PI / 2;
-			handLength = clockSize * 0.75;
-			break;
-		case 1:
-			// minute hand
-			theta = -(localTime->tm_min / 60.0 * 2.0 * PI) + PI / 2;
-			handLength = clockSize * 0.6;
-			break;
-		case 2:
-			// hour hand
-			theta = -(localTime->tm_hour / 12.0 * 2.0 * PI) + PI / 2;
-			handLength = clockSize * 0.5;
-			break;
-		}
+		// 0 == second hand
+		// 1 == minute hand
+		// 2 == hour hand
+		double theta = (
+			index == Hand::SEC ? -(localTime->tm_sec / 60.0 * 2.0 * PI) :
+			index == Hand::MIN ? -(localTime->tm_min / 60.0 * 2.0 * PI) :
+			index == Hand::HOUR ? -(localTime->tm_hour / 12.0 * 2.0 * PI) :
+			0) + PI / 2;
 
-		clockHand[index][0].x = (GLfloat)(cos(theta - 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[index][0].y = (GLfloat)(sin(theta - 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[index][1].x = (GLfloat)(cos(theta + 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[index][1].y = (GLfloat)(sin(theta + 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[index][2].x = (GLfloat)(cos(theta) * handLength / 2.0);
-		clockHand[index][2].y = (GLfloat)(sin(theta) * handLength / 2.0);
+		double handLength =
+			clockSize * (
+				index == Hand::SEC ? 0.75 :
+				index == Hand::MIN ? 0.60 :
+				index == Hand::HOUR ? 0.50 : 0);
+
+		clockHand[index][Hand::SEC].x = (GLfloat)(cos(theta - 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][Hand::SEC].y = (GLfloat)(sin(theta - 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][Hand::MIN].x = (GLfloat)(cos(theta + 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][Hand::MIN].y = (GLfloat)(sin(theta + 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][Hand::HOUR].x = (GLfloat)(cos(theta) * handLength / 2.0);
+		clockHand[index][Hand::HOUR].y = (GLfloat)(sin(theta) * handLength / 2.0);
 
 		glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) * 2]);
@@ -367,27 +366,27 @@ void updateTime(int _) {
 	}
 
 	glFlush();
-	glutTimerFunc(1000, updateTime, 0);
+	glutTimerFunc(interval, updateTime, 0);
 }
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// clock frame
-	generateCircleVertices(0, 0, GLfloat(clockSize * 1.00), FRAME);
-	drawCircle(FRAME);
+	generateCircleVertices(0, 0, GLfloat(clockSize * 1.00), Clock::FRAME);
+	drawCircle(Clock::FRAME);
 
 	// clock body
-	generateCircleVertices(0, 0, GLfloat(clockSize * 0.75), BODY);
-	drawCircle(BODY);
+	generateCircleVertices(0, 0, GLfloat(clockSize * 0.75), Clock::BODY);
+	drawCircle(Clock::BODY);
 
 	// clock digits
 	drawDigits();
 
 	// clock hands
-	drawClockHand(0);	// second hand
-	drawClockHand(1);	// minute hand
-	drawClockHand(2);	// hour hand
+	drawClockHand(Hand::SEC);	// second hand
+	drawClockHand(Hand::MIN);	// minute hand
+	drawClockHand(Hand::HOUR);	// hour hand
 
 	glFlush();
 }
@@ -448,9 +447,9 @@ void createMenu() {
 
 	// > clock color menu
 	int clockColorMenu = glutCreateMenu(processMenuEvents);
-	glutAddMenuEntry("Cyan", CYAN);
-	glutAddMenuEntry("Magenta", MAGENTA);
-	glutAddMenuEntry("Yellow", YELLOW);
+	glutAddMenuEntry("Cyan", MenuOption::CYAN);
+	glutAddMenuEntry("Magenta", MenuOption::MAGENTA);
+	glutAddMenuEntry("Yellow", MenuOption::YELLOW);
 
 	//// > clock digits menu
 	//int clockDigitsMenu = glutCreateMenu(processMenuEvents);
@@ -459,17 +458,17 @@ void createMenu() {
 
 	// > clock size menu
 	int clockSizeMenu = glutCreateMenu(processMenuEvents);
-	glutAddMenuEntry("Small", SMALL);
-	glutAddMenuEntry("Medium", MEDIUM);
-	glutAddMenuEntry("Large", LARGE);
+	glutAddMenuEntry("Small", MenuOption::SMALL);
+	glutAddMenuEntry("Medium", MenuOption::MEDIUM);
+	glutAddMenuEntry("Large", MenuOption::LARGE);
 
 	// main menu
 	int menu = glutCreateMenu(processMenuEvents);
-	//glutAddSubMenu("Shape", clockShapeMenu);
 	glutAddSubMenu("Color", clockColorMenu);
-	//glutAddSubMenu("Digits", clockDigitsMenu);
 	glutAddSubMenu("Size", clockSizeMenu);
-	glutAddMenuEntry("Exit", EXIT);
+	//glutAddSubMenu("Shape", clockShapeMenu);
+	//glutAddSubMenu("Digits", clockDigitsMenu);
+	glutAddMenuEntry("Exit", MenuOption::EXIT);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
@@ -484,9 +483,9 @@ int main(int argc, char** argv) {
 	glewInit();
 	init();
 	createMenu();
+	glutTimerFunc(interval, updateTime, 0);
 	glutDisplayFunc(display);
 	glutIdleFunc(display);
-	glutTimerFunc(1000, updateTime, 0);
 
 	glutMainLoop();
 }
