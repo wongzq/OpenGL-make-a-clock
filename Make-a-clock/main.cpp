@@ -333,10 +333,10 @@ void updateTime(int _) {
 	tm* localTime = new tm;
 	localtime_s(localTime, &curTime);
 
-	for (int i = 0; i < 3; i++) {
+	for (int index = 0; index < 3; index++) {
 		double theta = 0;
 		double handLength = 0;
-		switch (i) {
+		switch (index) {
 		case 0:
 			// second hand
 			theta = -(localTime->tm_sec / 60.0 * 2.0 * PI) + PI / 2;
@@ -354,16 +354,16 @@ void updateTime(int _) {
 			break;
 		}
 
-		clockHand[i][0].x = (GLfloat)(cos(theta - 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[i][0].y = (GLfloat)(sin(theta - 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[i][1].x = (GLfloat)(cos(theta + 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[i][1].y = (GLfloat)(sin(theta + 0.5) * (clockSize * 0.05) / 2.0);
-		clockHand[i][2].x = (GLfloat)(cos(theta) * handLength / 2.0);
-		clockHand[i][2].y = (GLfloat)(sin(theta) * handLength / 2.0);
+		clockHand[index][0].x = (GLfloat)(cos(theta - 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][0].y = (GLfloat)(sin(theta - 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][1].x = (GLfloat)(cos(theta + 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][1].y = (GLfloat)(sin(theta + 0.5) * (clockSize * 0.05) / 2.0);
+		clockHand[index][2].x = (GLfloat)(cos(theta) * handLength / 2.0);
+		clockHand[index][2].y = (GLfloat)(sin(theta) * handLength / 2.0);
 
-		glBindVertexArray(VAO[i + 2]);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[(i + 2) * 2]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockHand[i]), clockHand[i]);
+		glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) * 2]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockHand[index]), clockHand[index]);
 	}
 
 	glFlush();
