@@ -12,6 +12,7 @@ GLuint program;
 GLuint VAO[5];		// ID for Vertex Array Objects:
 					// VAO[0] is for Clock Frame
 					// VAO[1] is for Clock Body
+
 					// VAO[2] is for Clock Sec Hands
 					// VAO[3] is for Clock Min Hands
 					// VAO[4] is for Clock Hour Hands
@@ -21,6 +22,7 @@ GLuint VBO[10];		// ID for Vertex Buffer Objects:
 					// VBO[1] is for Clock Frame Color
 					// VBO[2] is for Clock Body Vertices
 					// VBO[3] is for Clock Body Color
+
 					// VBO[4] is for Clock Sec Hand Vertices
 					// VBO[5] is for Clock Sec Hand Color
 					// VBO[6] is for Clock Min Hand Vertices
@@ -55,21 +57,22 @@ const int window_w = 600, window_h = 600;
 const float PI = 3.14159f;
 const unsigned int numOfCircleVertices = 100;
 const int numOfColors = 4;
+const int numOfHandVertices = 3;
 const int interval = 100;
 void* font = GLUT_BITMAP_TIMES_ROMAN_24;
 
 // clockVertex[0] is Clock Frame, clockVertex[1] is Clock Body
 coordinate clockVertex[2][numOfCircleVertices];
 color colorOptions[numOfColors][numOfCircleVertices];
+// clockHand[0] is Sec Hand, clockHand[1] is Min Hand, clockHand[2] is Hour Hand
+coordinate clockHand[Hand::HAND_LENGTH][numOfHandVertices];
+color clockHandColor[numOfHandVertices];
 
-coordinate clockHand[3][3];
-color clockHandColor[3];
-
-float clockSize = 1.0f;
-int xOffset = 10;
-int yOffset = 10;
-int diameter = 180;
 int clockColor = ColorOption::CYAN_COLOR;
+int xDigitOffset = 10;
+int yDigitOffset = 10;
+int diameter = 180;
+float clockSize = 1.0f;
 
 // function to load shaders
 GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile) {
@@ -79,7 +82,6 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 	// load vertex shader code from file
 	std::string vShaderCodeStr;
 	std::ifstream vShaderStream(vShaderFile, std::ios::in);
-
 	if (vShaderStream.is_open()) {
 		// read from stream line by line and append it to shader code
 		std::string line = "";
@@ -97,7 +99,6 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 	// load fragment shader code from file
 	std::string fShaderCodeStr;
 	std::ifstream fShaderStream(fShaderFile, std::ios::in);
-
 	if (fShaderStream.is_open()) {
 		// read from stream line by line and append it to shader code
 		std::string line = "";
@@ -111,37 +112,35 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		exit(EXIT_FAILURE);
 	}
 
-	// create shader objects
-	GLuint vShaderID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-	// provide source code for shaders
-	const GLchar* vShaderCode = vShaderCodeStr.c_str();
-	const GLchar* fShaderCode = fShaderCodeStr.c_str();
-	glShaderSource(vShaderID, 1, &vShaderCode, NULL);
-	glShaderSource(fShaderID, 1, &fShaderCode, NULL);
-
 	// compile vertex shader
+	GLuint vShaderID = glCreateShader(GL_VERTEX_SHADER);
+	const GLchar* vShaderCode = vShaderCodeStr.c_str();
+	glShaderSource(vShaderID, 1, &vShaderCode, NULL);
+
 	status = GL_FALSE;
 	glCompileShader(vShaderID);
 	glGetShaderiv(vShaderID, GL_COMPILE_STATUS, &status);
+
 	if (status == GL_FALSE) {
 		std::cout << "Failed to compile vertex shader - " << vShaderFile << std::endl;
-
 		int infoLogLength;
-		glGetShaderiv(fShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		glGetShaderiv(vShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 		char* errorMsg = new char[static_cast<__int64>(infoLogLength) + 1];
 		glGetShaderInfoLog(vShaderID, infoLogLength, NULL, errorMsg);
 		std::cout << errorMsg << std::endl;
 		delete[] errorMsg;
-
 		exit(EXIT_FAILURE);
 	}
 
 	// compile fragment shader
+	GLuint fShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	const GLchar* fShaderCode = fShaderCodeStr.c_str();
+	glShaderSource(fShaderID, 1, &fShaderCode, NULL);
+
 	status = GL_FALSE;
 	glCompileShader(fShaderID);
 	glGetShaderiv(fShaderID, GL_COMPILE_STATUS, &status);
+
 	if (status == GL_FALSE) {
 		std::cout << "Failed to compile fragment shader - " << fShaderFile << std::endl;
 		int infoLogLength;
@@ -150,23 +149,21 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		glGetShaderInfoLog(fShaderID, infoLogLength, NULL, errorMsg);
 		std::cout << errorMsg << std::endl;
 		delete[] errorMsg;
-
 		exit(EXIT_FAILURE);
 	}
 
 	// create program
 	GLuint programID = glCreateProgram();
-
 	// attach shaders to program object
 	glAttachShader(programID, vShaderID);
 	glAttachShader(programID, fShaderID);
-
 	// link program object
 	glLinkProgram(programID);
 
 	// check link status
 	status = GL_FALSE;
 	glGetProgramiv(programID, GL_LINK_STATUS, &status);
+
 	if (status == GL_FALSE) {
 		std::cout << "Failed to link program object." << std::endl;
 		int infoLogLength;
@@ -175,7 +172,6 @@ GLuint loadShaders(const std::string vShaderFile, const std::string fShaderFile)
 		glGetShaderInfoLog(programID, infoLogLength, NULL, errorMsg);
 		std::cout << errorMsg << std::endl;
 		delete[] errorMsg;
-
 		exit(EXIT_FAILURE);
 	}
 
@@ -210,23 +206,21 @@ void init(void) {
 	// clock frame and body
 	for (int index = 0; index < Clock::CLOCK_LENGTH; index++) {
 		glBindVertexArray(VAO[index]);
-
 		// clock vertices
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(clockVertex[index]), clockVertex[index], GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
-
 		// clock color
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(colorOptions), colorOptions, GL_STATIC_DRAW);
 		for (int i = 0; i < numOfColors; i++) {
-			glVertexAttribPointer(i + 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)((unsigned long long) i * 100 * 3 * sizeof(GLfloat)));
+			glVertexAttribPointer(i + 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)((unsigned long long) i * numOfCircleVertices * 3 * sizeof(GLfloat)));
 			glEnableVertexAttribArray(i + 1);
 		}
 	}
 
-	// clock hands
+	// clock sec, min and hour hands
 	for (int index = 0; index < Hand::HAND_LENGTH; index++) {
 		glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
 		// clock hand vertices
@@ -246,15 +240,14 @@ void init(void) {
 	glUseProgram(program);
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-
 }
 
-// index is to determine if it is clock 'FRAME or BODY'
+// paint clock FRAME and BODY
 void generateCircleVertices(GLfloat x, GLfloat y, GLfloat r, int index) {
 	float theta = 0.0;
-	float increment = 2 * PI / numOfCircleVertices;
+	const float increment = 2 * PI / numOfCircleVertices;
 
-	// generate 100 vertex points
+	// generate circle vertex points
 	for (int i = 0; i < numOfCircleVertices; i++) {
 		clockVertex[index][i] = { (cos(theta) * r / 2) + x, (sin(theta) * r / 2) + y };
 		theta += increment;
@@ -282,6 +275,7 @@ void drawCircle(int index) {
 	glDrawArrays(GL_POLYGON, 0, numOfCircleVertices);
 }
 
+// paint font
 void renderBitmapCharacter(int x, int y, void* font, char* string) {
 	switch (clockColor) {
 	case ColorOption::CYAN_COLOR:
@@ -299,39 +293,27 @@ void renderBitmapCharacter(int x, int y, void* font, char* string) {
 }
 
 void drawDigits() {
-	// disable the shader program
-	glUseProgram(0);
-
 	// use OpenGL fixed pipeline functions
+	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(-window_w / 2, window_w / 2, -window_h / 2, window_h / 2);
 
-	const int numOfDigits = 12;
 	float theta = PI / 2;
-	float increment = 2 * PI / numOfDigits;
+	const int numOfDigits = 12;
+	const float increment = 2 * PI / numOfDigits;
 
 	for (int i = 0; i < numOfDigits; i++) {
-		int x = (int)(cos(theta) * diameter / 2) - xOffset;
-		int y = (int)(sin(theta) * diameter / 2) - yOffset;
+		int x = (int)(cos(theta) * diameter / 2) - xDigitOffset;
+		int y = (int)(sin(theta) * diameter / 2) - yDigitOffset;
 		theta -= increment;
 		renderBitmapCharacter(x, y, (void*)font, (char*)std::to_string(i == 0 ? 12 : i).c_str());
 	}
 
-	// enable the shader program
 	glUseProgram(program);
 }
 
-void drawClockHand(int index) {
-	int uniformLocation = glGetUniformLocation(program, "colorChoice");
-	glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) + 1]);
-	glBufferSubData(GL_ARRAY_BUFFER, 1, sizeof(clockHandColor), clockHandColor);
-	glUniform1i(uniformLocation, 1);
-
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-}
-
+// paint clock hands
 void updateTime(int _) {
 	time_t curTime = time(0);
 	tm* localTime = new tm;
@@ -369,6 +351,17 @@ void updateTime(int _) {
 	glutTimerFunc(interval, updateTime, 0);
 }
 
+void drawClockHand(int index) {
+	int uniformLocation = glGetUniformLocation(program, "colorChoice");
+	glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) + 1]);
+	glBufferSubData(GL_ARRAY_BUFFER, 1, sizeof(clockHandColor), clockHandColor);
+	glUniform1i(uniformLocation, 1);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+// display method
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -391,6 +384,7 @@ void display(void) {
 	glFlush();
 }
 
+// menu
 void processMenuEvents(int option) {
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
 
@@ -409,22 +403,22 @@ void processMenuEvents(int option) {
 		// size options
 	case MenuOption::SMALL:
 		clockSize = 0.75;
-		xOffset = 5;
-		yOffset = 5;
+		xDigitOffset = 5;
+		yDigitOffset = 5;
 		diameter = 135;
 		font = GLUT_BITMAP_TIMES_ROMAN_10;
 		break;
 	case MenuOption::MEDIUM:
 		clockSize = 1;
-		xOffset = 10;
-		yOffset = 10;
+		xDigitOffset = 10;
+		yDigitOffset = 10;
 		diameter = 180;
 		font = GLUT_BITMAP_TIMES_ROMAN_24;
 		break;
 	case MenuOption::LARGE:
 		clockSize = 1.5;
-		xOffset = 10;
-		yOffset = 10;
+		xDigitOffset = 10;
+		yDigitOffset = 10;
 		diameter = 270;
 		font = GLUT_BITMAP_TIMES_ROMAN_24;
 		break;
@@ -473,6 +467,7 @@ void createMenu() {
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
+// main
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
@@ -483,6 +478,7 @@ int main(int argc, char** argv) {
 	glewInit();
 	init();
 	createMenu();
+
 	glutTimerFunc(interval, updateTime, 0);
 	glutDisplayFunc(display);
 	glutIdleFunc(display);
