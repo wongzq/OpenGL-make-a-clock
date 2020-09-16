@@ -224,14 +224,14 @@ void init(void) {
 
 	// clock hands
 	for (int index = 0; index < 3; index++) {
-		glBindVertexArray(VAO[index + 2]);
+		glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
 		// clock hand vertices
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + 2) * 2 + 0]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) * 2 + 0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(clockHand[index]), clockHand[index], GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 		//clock hand color
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + 2) * 2 + 1]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) * 2 + 1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(clockHandColor), clockHandColor, GL_STATIC_DRAW);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
@@ -320,8 +320,8 @@ void drawDigits() {
 
 void drawClockHand(int index) {
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
-	glBindVertexArray(VAO[index + 2]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + 2) + 1]);
+	glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) + 1]);
 	glBufferSubData(GL_ARRAY_BUFFER, 1, sizeof(clockHandColor), clockHandColor);
 	glUniform1i(uniformLocation, 1);
 
@@ -338,14 +338,17 @@ void updateTime(int _) {
 		double handLength = 0;
 		switch (i) {
 		case 0:
+			// second hand
 			theta = -(localTime->tm_sec / 60.0 * 2.0 * PI) + PI / 2;
 			handLength = clockSize * 0.75;
 			break;
 		case 1:
+			// minute hand
 			theta = -(localTime->tm_min / 60.0 * 2.0 * PI) + PI / 2;
 			handLength = clockSize * 0.6;
 			break;
 		case 2:
+			// hour hand
 			theta = -(localTime->tm_hour / 12.0 * 2.0 * PI) + PI / 2;
 			handLength = clockSize * 0.5;
 			break;
@@ -364,7 +367,6 @@ void updateTime(int _) {
 	}
 
 	glFlush();
-
 	glutTimerFunc(1000, updateTime, 0);
 }
 
@@ -383,9 +385,9 @@ void display(void) {
 	drawDigits();
 
 	// clock hands
-	drawClockHand(0);
-	drawClockHand(1);
-	drawClockHand(2);
+	drawClockHand(0);	// second hand
+	drawClockHand(1);	// minute hand
+	drawClockHand(2);	// hour hand
 
 	glFlush();
 }
