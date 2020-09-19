@@ -1,2 +1,4 @@
 ﻿  main.cpp
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(376,10): warning C4244: 'initializing': conversion from 'GLfloat' to 'int', possible loss of data
+C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\main.cpp(377,10): warning C4244: 'initializing': conversion from 'GLfloat' to 'int', possible loss of data
   Make-a-clock.vcxproj -> C:\Users\wongz\Google Drive\INTI UOW\CSCI336 Computer Graphics\Assignments\OpenGL-make-a-clock\Make-a-clock\x64\Debug\Make-a-clock.exe
