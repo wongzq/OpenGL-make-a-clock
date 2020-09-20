@@ -23,5 +23,8 @@ void main() {
 	case 4:
 		vertexColor = color4;
 		break;
+	default:
+		vertexColor = vec3(0.0, 0.0, 0.0);
+		break;
 	}
 }
