@@ -7,16 +7,6 @@
 #include <chrono>
 #include <ctime>
 
-// clock parts
-enum Clock :int {
-	FRAME,			// Clock Frame == Outer circle / square
-	BODY,			// Clock Body == Inner circle / square
-	CLOCK_LENGTH	// Length of Clock enum
-};
-enum Hand :int {
-	SEC, MIN, HOUR, HAND_LENGTH
-};
-
 // openGL variables
 GLuint program;
 GLuint VAO[6];		// ID for Vertex Array Objects:
@@ -45,7 +35,17 @@ GLuint VBO[12];		// ID for Vertex Buffer Objects:
 					// VBO[10] is for Clock Dials Vertices
 					// VBO[11] is for Clock Dials Color
 
-// clock options
+// clock parts enum
+enum Clock :int {
+	FRAME,			// Clock Frame == Outer circle / square
+	BODY,			// Clock Body == Inner circle / square
+	CLOCK_LENGTH	// Length of Clock enum
+};
+enum Hand :int {
+	SEC, MIN, HOUR, HAND_LENGTH
+};
+
+// clock options enum
 enum MenuOption :int {
 	CIRCLE, SQUARE,
 	CYAN, MAGENTA, YELLOW,
@@ -65,6 +65,8 @@ enum ClockSize : int {
 enum ClockDigits :int {
 	SHOW_DIGITS, HIDE_DIGITS
 };
+
+// structs
 struct coordinate { GLfloat x, y; };
 struct color { GLfloat r, g, b; };
 
@@ -79,6 +81,7 @@ const int numOfDials = 12;
 const int interval = 100;
 const int clockDialIndex = Clock::CLOCK_LENGTH + Hand::HAND_LENGTH;
 
+// clock data
 coordinate clockVertex[Clock::CLOCK_LENGTH][numOfClockVertices];
 color clockColorOptions[numOfColors][numOfClockVertices];
 coordinate clockHand[Hand::HAND_LENGTH][numOfHandVertices];
@@ -87,6 +90,7 @@ coordinate clockDial[numOfDials][4];
 color clockDialColor[numOfDials * 4];
 float clockDiameter = 1.00f;
 
+// clock current option
 int clockColor = ClockColor::CYAN_COLOR;
 int clockShape = ClockShape::CIRCLE_SHAPE;
 int clockSize = ClockSize::MEDIUM_SIZE;
