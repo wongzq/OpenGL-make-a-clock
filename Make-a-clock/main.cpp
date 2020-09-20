@@ -335,7 +335,7 @@ void generateClockVertices(GLfloat x, GLfloat y, GLfloat d, int index) {
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockVertex[index]), clockVertex[index]);
 }
 
-void drawCircle(int index) {
+void drawClock(int index) {
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
 	glBindVertexArray(VAO[index]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
@@ -515,11 +515,11 @@ void display(void) {
 
 	// clock frame
 	generateClockVertices(0, 0, GLfloat(clockDiameter * 1.00), Clock::FRAME);
-	drawCircle(Clock::FRAME);
+	drawClock(Clock::FRAME);
 
 	// clock body
 	generateClockVertices(0, 0, GLfloat(clockDiameter * 0.75), Clock::BODY);
-	drawCircle(Clock::BODY);
+	drawClock(Clock::BODY);
 
 	// clock digits
 	drawDigits();
