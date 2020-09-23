@@ -8,37 +8,44 @@
 #include <ctime>
 
 // openGL variables
+const GLuint numOfVAO = 7;
+const GLuint numOfVBO = 14;
+
 GLuint program;
-GLuint VAO[6];		// ID for Vertex Array Objects:
-					// VAO[0] is for Clock Frame
-					// VAO[1] is for Clock Body
+GLuint VAO[numOfVAO];	// ID for Vertex Array Objects:
+						// VAO[0] is for Clock Frame
+						// VAO[1] is for Clock Frame Shadow
+						// VAO[2] is for Clock Body
 
-					// VAO[2] is for Clock Sec Hands
-					// VAO[3] is for Clock Min Hands
-					// VAO[4] is for Clock Hour Hands
+						// VAO[3] is for Clock Sec Hands
+						// VAO[4] is for Clock Min Hands
+						// VAO[5] is for Clock Hour Hands
 
-					// VAO[5] is for Clock Dials
+						// VAO[6] is for Clock Dials
 
-GLuint VBO[12];		// ID for Vertex Buffer Objects:
-					// VBO[0] is for Clock Frame Vertices
-					// VBO[1] is for Clock Frame Color
-					// VBO[2] is for Clock Body Vertices
-					// VBO[3] is for Clock Body Color
+GLuint VBO[numOfVBO];	// ID for Vertex Buffer Objects:
+						// VBO[0] is for Clock Frame Vertices
+						// VBO[1] is for Clock Frame Color
+						// VBO[2] is for Clock Frame Shadow Vertices
+						// VBO[3] is for Clock Frame Shadow Color
+						// VBO[4] is for Clock Body Vertices
+						// VBO[5] is for Clock Body Color
 
-					// VBO[4] is for Clock Sec Hand Vertices
-					// VBO[5] is for Clock Sec Hand Color
-					// VBO[6] is for Clock Min Hand Vertices
-					// VBO[7] is for Clock Min Hand Color
-					// VBO[8] is for Clock Hour Hand Vertices
-					// VBO[9] is for Clock Hour Hand Color
+						// VBO[6] is for Clock Sec Hand Vertices
+						// VBO[7] is for Clock Sec Hand Color
+						// VBO[8] is for Clock Min Hand Vertices
+						// VBO[9] is for Clock Min Hand Color
+						// VBO[10] is for Clock Hour Hand Vertices
+						// VBO[11] is for Clock Hour Hand Color
 
-					// VBO[10] is for Clock Dials Vertices
-					// VBO[11] is for Clock Dials Color
+						// VBO[12] is for Clock Dials Vertices
+						// VBO[13] is for Clock Dials Color
 
 // clock parts enum
 enum Clock :int {
-	FRAME,			// Clock Frame == Outer circle / square
-	BODY,			// Clock Body == Inner circle / square
+	FRAME,			// Clock Frame		  == Outer  circle / square
+	FRAME_SHADOW,	// Clock Frame Shadow == Middle circle / square
+	BODY,			// Clock Body		  == Inner  circle / square
 	CLOCK_LENGTH	// Length of Clock enum
 };
 enum Hand :int {
@@ -76,6 +83,7 @@ const float PI = 3.14159f;
 const unsigned int numOfClockVertices = 100;
 const int numOfColors = 4;
 const int numOfHandVertices = 4;
+const int numOfDialVertices = 6;
 const int numOfDigits = 12;
 const int numOfDials = 12;
 const int interval = 100;
@@ -86,8 +94,8 @@ coordinate clockVertex[Clock::CLOCK_LENGTH][numOfClockVertices];
 color clockColorOptions[numOfColors][numOfClockVertices];
 coordinate clockHand[Hand::HAND_LENGTH][numOfHandVertices];
 color clockHandColor[numOfHandVertices];
-coordinate clockDial[numOfDials][4];
-color clockDialColor[numOfDials * 4];
+coordinate clockDial[numOfDials][numOfDialVertices];
+color clockDialColor[numOfDials * numOfDialVertices];
 float clockDiameter = 1.00f;
 
 // clock current option
@@ -226,12 +234,12 @@ void init(void) {
 	}
 
 	// clock dial color
-	for (int i = 0; i < numOfDials * 4; i++) {
+	for (int i = 0; i < numOfDials * numOfDialVertices; i++) {
 		clockDialColor[i] = { 0.4f, 0.4f, 0.4f };
 	}
 
-	glGenVertexArrays(6, VAO);
-	glGenBuffers(12, VBO);
+	glGenVertexArrays(numOfVAO, VAO);
+	glGenBuffers(numOfVBO, VBO);
 
 	// clock frame and body
 	for (int index = 0; index < Clock::CLOCK_LENGTH; index++) {
@@ -342,11 +350,14 @@ void drawClock(int index) {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[index * 2 + 1]);
 
 	switch (index) {
-	case Clock::BODY:
-		glUniform1i(uniformLocation, 4);
-		break;
 	case Clock::FRAME:
 		glUniform1i(uniformLocation, clockColor);
+		break;
+	case Clock::FRAME_SHADOW:
+		glUniform1i(uniformLocation, clockColor + 4);
+		break;
+	case Clock::BODY:
+		glUniform1i(uniformLocation, 4);
 		break;
 	}
 
@@ -430,15 +441,20 @@ void drawDigits() {
 		const float decrement = PI * 2 / numOfDials;
 
 		for (int i = 0; i < numOfDials; i++) {
-			const coordinate corner1 = { -0.01f, clockDiameter * 0.35f };
-			const coordinate corner2 = { +0.01f, clockDiameter * 0.35f };
-			const coordinate corner3 = { +0.01f, clockDiameter * (i % 3 == 0 ? 0.25f : 0.3f) };
-			const coordinate corner4 = { -0.01f, clockDiameter * (i % 3 == 0 ? 0.25f : 0.3f) };
+			const coordinate corner1 = { -0.01f, clockDiameter * (i % 3 == 0 ? 0.29f : 0.29f) };
+			const coordinate corner2 = { +0.01f, clockDiameter * (i % 3 == 0 ? 0.29f : 0.29f) };
+			const coordinate corner3 = { +0.00f, clockDiameter * (i % 3 == 0 ? 0.20f : 0.25f) };
+
+			const coordinate corner4 = { -0.01f, clockDiameter * (i % 3 == 0 ? 0.30f : 0.30f) };
+			const coordinate corner5 = { +0.01f, clockDiameter * (i % 3 == 0 ? 0.30f : 0.30f) };
+			const coordinate corner6 = { +0.00f, clockDiameter * (i % 3 == 0 ? 0.36f : 0.32f) };
 
 			clockDial[i][0] = rotate(corner1, theta);
 			clockDial[i][1] = rotate(corner2, theta);
 			clockDial[i][2] = rotate(corner3, theta);
 			clockDial[i][3] = rotate(corner4, theta);
+			clockDial[i][4] = rotate(corner5, theta);
+			clockDial[i][5] = rotate(corner6, theta);
 
 			theta -= decrement;
 		}
@@ -450,7 +466,7 @@ void drawDigits() {
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[clockDialIndex * 2 + 1]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(clockDialColor), clockDialColor);
 		glUniform1i(uniformLocation, 1);
-		glDrawArrays(GL_QUADS, 0, numOfDials * 4);
+		glDrawArrays(GL_TRIANGLES, 0, numOfDials * numOfDialVertices);
 		break;
 	}
 	}
@@ -480,16 +496,16 @@ void generateHandVertices(int _) {
 
 		double handLength =
 			clockDiameter * (
-				index == Hand::SEC ? 0.75 :
+				index == Hand::SEC ? 0.70 :
 				index == Hand::MIN ? 0.60 :
 				index == Hand::HOUR ? 0.50 : 0);
 
-		clockHand[index][0].x = (GLfloat)(cos(theta - 0.5) * (clockDiameter * 0.05) / 2.0);
-		clockHand[index][0].y = (GLfloat)(sin(theta - 0.5) * (clockDiameter * 0.05) / 2.0);
+		clockHand[index][0].x = (GLfloat)(cos(theta - 0.15) * (clockDiameter * 0.2) / 2.0);
+		clockHand[index][0].y = (GLfloat)(sin(theta - 0.15) * (clockDiameter * 0.2) / 2.0);
 		clockHand[index][1].x = 0;
 		clockHand[index][1].y = 0;
-		clockHand[index][2].x = (GLfloat)(cos(theta + 0.5) * (clockDiameter * 0.05) / 2.0);
-		clockHand[index][2].y = (GLfloat)(sin(theta + 0.5) * (clockDiameter * 0.05) / 2.0);
+		clockHand[index][2].x = (GLfloat)(cos(theta + 0.15) * (clockDiameter * 0.2) / 2.0);
+		clockHand[index][2].y = (GLfloat)(sin(theta + 0.15) * (clockDiameter * 0.2) / 2.0);
 		clockHand[index][3].x = (GLfloat)(cos(theta) * handLength / 2.0);
 		clockHand[index][3].y = (GLfloat)(sin(theta) * handLength / 2.0);
 
@@ -519,6 +535,10 @@ void display(void) {
 	// clock frame
 	generateClockVertices(0, 0, GLfloat(clockDiameter * 1.00), Clock::FRAME);
 	drawClock(Clock::FRAME);
+
+	// clock frame shadow
+	generateClockVertices(0, 0, GLfloat(clockDiameter * 0.80), Clock::FRAME_SHADOW);
+	drawClock(Clock::FRAME_SHADOW);
 
 	// clock body
 	generateClockVertices(0, 0, GLfloat(clockDiameter * 0.75), Clock::BODY);
