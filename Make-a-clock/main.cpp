@@ -221,7 +221,7 @@ void init(void) {
 
 	// clock hand color
 	for (int i = 0; i < numOfHandVertices; i++) {
-		GLfloat handColor = i == 3 ? 0.6 : 0.2;
+		GLfloat handColor = (GLfloat)(i == 3 ? 0.6 : 0.2);
 		clockHandColor[i] = { handColor, handColor, handColor };
 	}
 
