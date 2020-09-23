@@ -75,7 +75,7 @@ const int window_w = 600, window_h = 600;
 const float PI = 3.14159f;
 const unsigned int numOfClockVertices = 100;
 const int numOfColors = 4;
-const int numOfHandVertices = 3;
+const int numOfHandVertices = 4;
 const int numOfDigits = 12;
 const int numOfDials = 12;
 const int interval = 100;
@@ -220,8 +220,9 @@ void init(void) {
 	}
 
 	// clock hand color
-	for (int i = 0; i < 3; i++) {
-		clockHandColor[i] = { (GLfloat)0.3, (GLfloat)0.3, (GLfloat)0.3 };
+	for (int i = 0; i < numOfHandVertices; i++) {
+		GLfloat handColor = i == 3 ? 0.6 : 0.2;
+		clockHandColor[i] = { handColor, handColor, handColor };
 	}
 
 	// clock dial color
@@ -456,7 +457,7 @@ void drawDigits() {
 }
 
 // paint clock hands
-void updateTime(int _) {
+void generateHandVertices(int _) {
 	time_t curTime = time(0);
 	tm* localTime = new tm;
 	localtime_s(localTime, &curTime);
@@ -483,12 +484,14 @@ void updateTime(int _) {
 				index == Hand::MIN ? 0.60 :
 				index == Hand::HOUR ? 0.50 : 0);
 
-		clockHand[index][Hand::SEC].x = (GLfloat)(cos(theta - 0.5) * (-clockDiameter * 0.05) / 2.0);
-		clockHand[index][Hand::SEC].y = (GLfloat)(sin(theta - 0.5) * (-clockDiameter * 0.05) / 2.0);
-		clockHand[index][Hand::MIN].x = (GLfloat)(cos(theta + 0.5) * (-clockDiameter * 0.05) / 2.0);
-		clockHand[index][Hand::MIN].y = (GLfloat)(sin(theta + 0.5) * (-clockDiameter * 0.05) / 2.0);
-		clockHand[index][Hand::HOUR].x = (GLfloat)(cos(theta) * handLength / 2.0);
-		clockHand[index][Hand::HOUR].y = (GLfloat)(sin(theta) * handLength / 2.0);
+		clockHand[index][0].x = (GLfloat)(cos(theta - 0.5) * (clockDiameter * 0.05) / 2.0);
+		clockHand[index][0].y = (GLfloat)(sin(theta - 0.5) * (clockDiameter * 0.05) / 2.0);
+		clockHand[index][1].x = 0;
+		clockHand[index][1].y = 0;
+		clockHand[index][2].x = (GLfloat)(cos(theta + 0.5) * (clockDiameter * 0.05) / 2.0);
+		clockHand[index][2].y = (GLfloat)(sin(theta + 0.5) * (clockDiameter * 0.05) / 2.0);
+		clockHand[index][3].x = (GLfloat)(cos(theta) * handLength / 2.0);
+		clockHand[index][3].y = (GLfloat)(sin(theta) * handLength / 2.0);
 
 		glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) * 2]);
@@ -496,17 +499,17 @@ void updateTime(int _) {
 	}
 
 	glFlush();
-	glutTimerFunc(interval, updateTime, 0);
+	glutTimerFunc(interval, generateHandVertices, 0);
 }
 
-void drawClockHand(int index) {
+void drawHand(int index) {
 	int uniformLocation = glGetUniformLocation(program, "colorChoice");
 	glBindVertexArray(VAO[index + Clock::CLOCK_LENGTH]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[(index + Clock::CLOCK_LENGTH) + 1]);
 	glBufferSubData(GL_ARRAY_BUFFER, 1, sizeof(clockHandColor), clockHandColor);
 	glUniform1i(uniformLocation, 1);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_QUADS, 0, numOfClockVertices);
 }
 
 // display method
@@ -525,9 +528,9 @@ void display(void) {
 	drawDigits();
 
 	// clock hands
-	drawClockHand(Hand::SEC);	// second hand
-	drawClockHand(Hand::MIN);	// minute hand
-	drawClockHand(Hand::HOUR);	// hour hand
+	drawHand(Hand::SEC);	// second hand
+	drawHand(Hand::MIN);	// minute hand
+	drawHand(Hand::HOUR);	// hour hand
 
 	glFlush();
 }
@@ -631,7 +634,7 @@ int main(int argc, char** argv) {
 	init();
 	createMenu();
 
-	glutTimerFunc(interval, updateTime, 0);
+	glutTimerFunc(interval, generateHandVertices, 0);
 	glutDisplayFunc(display);
 	glutIdleFunc(display);
 
