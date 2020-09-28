@@ -229,6 +229,7 @@ void init(void) {
 
 	// clock hand color
 	for (int i = 0; i < numOfHandVertices; i++) {
+		// create gradient color
 		GLfloat handColor = (GLfloat)(i == (numOfHandVertices - 1) ? 0.6 : 0.2);
 		clockHandColor[i] = { handColor, handColor, handColor };
 	}
