@@ -217,9 +217,9 @@ void init(void) {
 				clockColorOptions[i][j] = { (GLfloat)0.7, (GLfloat)0.7, (GLfloat)0.7 };
 			}
 			else {
-				// if i == 0, color is Magenta
-				// if i == 1, color is Yellow
-				// if i == 2, color is Cyan
+				// if i == 0, color is Cyan
+				// if i == 1, color is Magenta
+				// if i == 2, color is Yellow
 				clockColorOptions[i][j].r = (GLfloat)(i == 1 || i == 2 ? 0.85 : 0.3);
 				clockColorOptions[i][j].g = (GLfloat)(i == 2 || i == 0 ? 0.85 : 0.3);
 				clockColorOptions[i][j].b = (GLfloat)(i == 0 || i == 1 ? 0.85 : 0.3);
@@ -442,13 +442,13 @@ void drawDigits() {
 
 		for (int i = 0; i < numOfDials; i++) {
 			// inner part of dial
-			const coordinate corner1 = { -0.01f, clockDiameter * (i % 3 == 0 ? 0.29f : 0.29f) };
-			const coordinate corner2 = { +0.01f, clockDiameter * (i % 3 == 0 ? 0.29f : 0.29f) };
+			const coordinate corner1 = { -0.01f, clockDiameter * 0.29f };
+			const coordinate corner2 = { +0.01f, clockDiameter * 0.29f };
 			const coordinate corner3 = { +0.00f, clockDiameter * (i % 3 == 0 ? 0.20f : 0.25f) };
 
 			// outer part of dial
-			const coordinate corner4 = { -0.01f, clockDiameter * (i % 3 == 0 ? 0.30f : 0.30f) };
-			const coordinate corner5 = { +0.01f, clockDiameter * (i % 3 == 0 ? 0.30f : 0.30f) };
+			const coordinate corner4 = { -0.01f, clockDiameter * 0.30f };
+			const coordinate corner5 = { +0.01f, clockDiameter * 0.30f };
 			const coordinate corner6 = { +0.00f, clockDiameter * (i % 3 == 0 ? 0.36f : 0.32f) };
 
 			clockDial[i][0] = rotate(corner1, theta);
