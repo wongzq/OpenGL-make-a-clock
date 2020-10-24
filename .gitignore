@@ -1,6 +1,7 @@
 # Compiled files
 .vs/
 bin/
+x64/
 
 # Prerequisites
 *.d
